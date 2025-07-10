@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\System;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreUserRequest;
-use App\Http\Requests\UpdateUserRequest;
+use App\Http\Requests\User\StoreUserRequest;
+use App\Http\Requests\User\UpdateUserRequest;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Inertia\Inertia;
@@ -31,12 +31,12 @@ class UserController extends Controller
                     return $row->roles->pluck('name')->join(', ');
                 })
                 ->addColumn('action', function ($row) {
-                    $editUrl = route('system.users.edit', $row->id);
+                    $editUrl = route('system.users.edit', $row->encrypted_id);
                     return '
                         <a href="' . $editUrl . '" class="btn btn-info btn-sm" title="Edit">
                             <i class="fa fa-edit"></i>
                         </a>
-                        <button type="button" data-id="' . $row->id . '" class="btn btn-danger btn-sm js-delete" title="Delete">
+                        <button type="button" data-id="' . $row->encrypted_id . '" class="btn btn-danger btn-sm js-delete" title="Delete">
                             <i class="fa fa-trash-o"></i>
                         </button>
                     ';
@@ -73,21 +73,21 @@ class UserController extends Controller
             ->with('success', 'User created successfully.');
     }
 
-    public function edit($id)
+    public function edit(User $id)
     {
-        $user = User::with('roles')->findOrFail($id);
+        $user = $id->load('roles');
         $roles = Role::all();
 
         return Inertia::render('system/users/FormPage', [
-            'user' => $user,
+            'user' => $user->toArray() + ['encrypted_id' => $user->encrypted_id],
             'roles' => $roles,
             'userRoles' => $user->roles->pluck('name')->toArray()
         ]);
     }
 
-    public function update(UpdateUserRequest $request, $id)
+    public function update(UpdateUserRequest $request, User $id)
     {
-        $user = User::findOrFail($id);
+        $user = $id;
 
         $user->update([
             'name' => $request->name,
@@ -107,9 +107,9 @@ class UserController extends Controller
             ->with('user_updated', true);
     }
 
-    public function destroy($id)
+    public function destroy(User $id)
     {
-        $user = User::findOrFail($id);
+        $user = $id;
 
         // Prevent deletion of current user
         if ($user->id === auth()->id()) {

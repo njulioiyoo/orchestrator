@@ -96,6 +96,13 @@
 import { router } from '@inertiajs/vue3'
 
 const logout = () => {
-    router.post('/logout')
+    router.post('/logout', {}, {
+        onFinish: () => {
+            // Force complete page reload after logout to clear all state
+            setTimeout(() => {
+                window.location.href = '/login'
+            }, 100)
+        }
+    })
 }
 </script>

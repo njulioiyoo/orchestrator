@@ -7,11 +7,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
+use App\Traits\EncryptedRouteKey;
+use OwenIt\Auditing\Contracts\Auditable;
+use OwenIt\Auditing\Auditable as AuditableTrait;
 
-class User extends Authenticatable
+class User extends Authenticatable implements Auditable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasRoles;
+    use HasFactory, Notifiable, HasRoles, EncryptedRouteKey, AuditableTrait;
 
     /**
      * The attributes that are mass assignable.
@@ -22,6 +25,11 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+    ];
+
+    protected $auditExclude = [
+        'password',
+        'remember_token',
     ];
 
     /**

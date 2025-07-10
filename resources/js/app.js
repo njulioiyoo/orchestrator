@@ -6,12 +6,23 @@ import permissionDirective from './directives/permission.js'
 
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest'
 
-const token = document.head.querySelector('meta[name="csrf-token"]')
-if (token) {
-    axios.defaults.headers.common['X-CSRF-TOKEN'] = token.content
-} else {
-    console.warn('CSRF token not found in <meta name="csrf-token">')
+// Function to update CSRF token
+const updateCsrfToken = () => {
+    const token = document.head.querySelector('meta[name="csrf-token"]')
+    if (token) {
+        axios.defaults.headers.common['X-CSRF-TOKEN'] = token.content
+    } else {
+        console.warn('CSRF token not found in <meta name="csrf-token">')
+    }
 }
+
+// Set initial CSRF token
+updateCsrfToken()
+
+// Update CSRF token on page navigation
+document.addEventListener('inertia:navigate', () => {
+    updateCsrfToken()
+})
 
 createInertiaApp({
     resolve: name => {

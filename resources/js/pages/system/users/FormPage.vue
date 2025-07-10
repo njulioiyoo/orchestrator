@@ -24,7 +24,7 @@ const breadcrumbItems = [
     { label: isEdit ? 'Edit' : 'Create' },
 ]
 
-const submitUrl = isEdit ? `/system/users/${props.user.id}` : '/system/users'
+const submitUrl = isEdit ? `/system/users/${props.user.encrypted_id}` : '/system/users'
 </script>
 
 <template>

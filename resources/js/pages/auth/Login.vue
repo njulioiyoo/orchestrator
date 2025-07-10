@@ -53,11 +53,7 @@ const form = useForm({
 })
 
 const submit = () => {
-    form.post('/login', {
-        onError: (errors) => {
-            console.error(errors)
-        },
-    })
+    form.post('/login')
 }
 </script>
 

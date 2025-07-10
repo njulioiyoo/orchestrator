@@ -78,7 +78,7 @@ const breadcrumbItems = [
 ]
 
 const handleSubmit = () => {
-    form.put(`/system/permissions/${props.permission.id}`, {
+    form.put(`/system/permissions/${props.permission.encrypted_id}`, {
         preserveScroll: true
     })
 }

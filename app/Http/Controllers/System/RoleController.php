@@ -4,10 +4,12 @@ namespace App\Http\Controllers\System;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Spatie\Permission\Models\Role;
+use App\Models\Role;
 use App\Models\Permission;
 use Inertia\Inertia;
 use Yajra\DataTables\Facades\DataTables;
+use App\Http\Requests\Role\StoreRoleRequest;
+use App\Http\Requests\Role\UpdateRoleRequest;
 
 class RoleController extends Controller
 {
@@ -29,12 +31,12 @@ class RoleController extends Controller
                     return $row->users_count;
                 })
                 ->addColumn('action', function ($row) {
-                    $editUrl = route('system.roles.edit', $row->id);
+                    $editUrl = route('system.roles.edit', $row->encrypted_id);
                     return '
                         <a href="' . $editUrl . '" class="btn btn-info btn-sm" title="Edit">
                             <i class="fa fa-edit"></i>
                         </a>
-                        <button type="button" data-id="' . $row->id . '" class="btn btn-danger btn-sm js-delete" title="Delete">
+                        <button type="button" data-id="' . $row->encrypted_id . '" class="btn btn-danger btn-sm js-delete" title="Delete">
                             <i class="fa fa-trash-o"></i>
                         </button>
                     ';
@@ -54,13 +56,8 @@ class RoleController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(StoreRoleRequest $request)
     {
-        $request->validate([
-            'name' => 'required|string|unique:roles',
-            'permissions' => 'array'
-        ]);
-
         $role = Role::create(['name' => $request->name]);
 
         if ($request->permissions) {
@@ -71,26 +68,21 @@ class RoleController extends Controller
             ->with('success', 'Role created successfully.');
     }
 
-    public function edit($id)
+    public function edit(Role $id)
     {
-        $role = Role::with('permissions')->findOrFail($id);
+        $role = $id->load('permissions');
         $permissions = Permission::all()->groupBy('group');
 
         return Inertia::render('system/roles/Create', [
-            'role' => $role,
+            'role' => $role->toArray() + ['encrypted_id' => $role->encrypted_id],
             'permissions' => $permissions,
             'rolePermissions' => $role->permissions->pluck('name')->toArray()
         ]);
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdateRoleRequest $request, Role $id)
     {
-        $role = Role::findOrFail($id);
-
-        $request->validate([
-            'name' => 'required|string|unique:roles,name,' . $role->id,
-            'permissions' => 'array'
-        ]);
+        $role = $id;
 
         $role->update(['name' => $request->name]);
         $role->syncPermissions($request->permissions ?? []);
@@ -99,9 +91,9 @@ class RoleController extends Controller
             ->with('success', 'Role updated successfully.');
     }
 
-    public function destroy($id)
+    public function destroy(Role $id)
     {
-        $role = Role::findOrFail($id);
+        $role = $id;
 
         // Prevent deletion of important roles
         if (in_array($role->name, ['Super Admin', 'Admin'])) {

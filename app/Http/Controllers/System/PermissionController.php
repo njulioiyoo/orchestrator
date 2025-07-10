@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use App\Models\Permission;
 use Inertia\Inertia;
 use Yajra\DataTables\Facades\DataTables;
+use App\Http\Requests\Permission\StorePermissionRequest;
+use App\Http\Requests\Permission\UpdatePermissionRequest;
 
 class PermissionController extends Controller
 {
@@ -25,12 +27,12 @@ class PermissionController extends Controller
             return DataTables::of($query)
                 ->addIndexColumn()
                 ->addColumn('action', function ($row) {
-                    $editUrl = route('system.permissions.edit', $row->id);
+                    $editUrl = route('system.permissions.edit', $row->encrypted_id);
                     return '
                         <a href="' . $editUrl . '" class="btn btn-info btn-sm" title="Edit">
                             <i class="fa fa-edit"></i>
                         </a>
-                        <button type="button" data-id="' . $row->id . '" class="btn btn-danger btn-sm js-delete" title="Delete">
+                        <button type="button" data-id="' . $row->encrypted_id . '" class="btn btn-danger btn-sm js-delete" title="Delete">
                             <i class="fa fa-trash-o"></i>
                         </button>
                     ';
@@ -47,13 +49,8 @@ class PermissionController extends Controller
         return Inertia::render('system/permissions/Create');
     }
 
-    public function store(Request $request)
+    public function store(StorePermissionRequest $request)
     {
-        $request->validate([
-            'name' => 'required|string|unique:permissions',
-            'group' => 'required|string'
-        ]);
-
         Permission::create([
             'name' => $request->name,
             'group' => $request->group,
@@ -64,22 +61,17 @@ class PermissionController extends Controller
             ->with('success', 'Permission created successfully.');
     }
 
-    public function edit($id)
+    public function edit(Permission $id)
     {
-        $permission = Permission::findOrFail($id);
+        $permission = $id;
         return Inertia::render('system/permissions/Edit', [
-            'permission' => $permission
+            'permission' => $permission->toArray() + ['encrypted_id' => $permission->encrypted_id]
         ]);
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdatePermissionRequest $request, Permission $id)
     {
-        $permission = Permission::findOrFail($id);
-
-        $request->validate([
-            'name' => 'required|string|unique:permissions,name,' . $permission->id,
-            'group' => 'required|string'
-        ]);
+        $permission = $id;
 
         $permission->update([
             'name' => $request->name,
@@ -90,9 +82,9 @@ class PermissionController extends Controller
             ->with('success', 'Permission updated successfully.');
     }
 
-    public function destroy($id)
+    public function destroy(Permission $id)
     {
-        $permission = Permission::findOrFail($id);
+        $permission = $id;
         $permission->delete();
 
         return response()->json(['message' => 'Permission deleted successfully.'], 200);

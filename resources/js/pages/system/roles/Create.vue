@@ -92,7 +92,7 @@ const breadcrumbItems = [
 ]
 
 const handleSubmit = () => {
-    const url = isEdit ? `/system/roles/${props.role.id}` : '/system/roles'
+    const url = isEdit ? `/system/roles/${props.role.encrypted_id}` : '/system/roles'
     const method = isEdit ? form.put.bind(form) : form.post.bind(form)
 
     method(url, {

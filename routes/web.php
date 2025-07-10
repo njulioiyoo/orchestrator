@@ -6,6 +6,8 @@ use App\Http\Controllers\System\UserController;
 use Inertia\Inertia;
 use App\Http\Controllers\System\RoleController;
 use App\Http\Controllers\System\PermissionController;
+use App\Http\Controllers\System\AuditController;
+use App\Http\Controllers\System\MenuController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -59,5 +61,26 @@ Route::middleware('auth')->group(function () {
             Route::put('/{id}', [PermissionController::class, 'update'])->name('system.permissions.update');
             Route::delete('/{id}', [PermissionController::class, 'destroy'])->name('system.permissions.destroy');
         });
+
+        // Audit Logs (Admin only)
+        Route::prefix('audits')->middleware('role:Admin')->group(function () {
+            Route::get('/', [AuditController::class, 'index'])->name('system.audits.index');
+            Route::get('/data', [AuditController::class, 'data'])->name('system.audits.data');
+            Route::get('/{audit}', [AuditController::class, 'show'])->name('system.audits.show');
+        });
+
+        // Menu Management (Admin only)
+        Route::prefix('menus')->middleware('role:Admin')->group(function () {
+            Route::get('/', [MenuController::class, 'index'])->name('system.menus.index');
+            Route::get('/create', [MenuController::class, 'create'])->name('system.menus.create');
+            Route::post('/', [MenuController::class, 'store'])->name('system.menus.store');
+            Route::get('/{menu}/edit', [MenuController::class, 'edit'])->name('system.menus.edit');
+            Route::put('/{menu}', [MenuController::class, 'update'])->name('system.menus.update');
+            Route::delete('/{menu}', [MenuController::class, 'destroy'])->name('system.menus.destroy');
+            Route::post('/update-order', [MenuController::class, 'updateOrder'])->name('system.menus.updateOrder');
+        });
     });
+
+    // API endpoint untuk sidebar menu
+    Route::get('/api/menus', [MenuController::class, 'getMenusJson'])->name('api.menus');
 });
