@@ -1,10 +1,20 @@
 <script setup>
-import { useForm, usePage, Link } from '@inertiajs/vue3'
+import { useForm, usePage, Link, router } from '@inertiajs/vue3'
+import { ref } from 'vue'
+import { useUserStore } from '@/stores/userStore.js'
 
 const props = defineProps({
     user: {
         type: Object,
         default: null,
+    },
+    roles: {
+        type: Array,
+        default: () => [],
+    },
+    userRoles: {
+        type: Array,
+        default: () => [],
     },
     submitUrl: String,
     isEdit: {
@@ -17,32 +27,53 @@ const form = useForm({
     name: props.user?.name ?? '',
     email: props.user?.email ?? '',
     password: '',
+    role: props.userRoles?.[0] ?? '', // Single role instead of array
 })
+
+// Form initialized with user role pre-selected
+
+// Modal state
+const showModal = ref(false)
 
 const errors = usePage().props.errors || {}
 
-const notifyNewUserCreated = () => {
-    try {
-        localStorage.setItem('newUserCreated', 'true')
-        localStorage.setItem('newUserTimestamp', Date.now().toString())
-        window.dispatchEvent(new CustomEvent('user-created'))
-    } catch (error) {
-        console.error('Error in notifyNewUserCreated:', error)
-    }
-}
+// Use Pinia store for state management
+const userStore = useUserStore()
 
 const handleSubmit = () => {
     const method = props.isEdit ? form.put.bind(form) : form.post.bind(form)
+    
+    userStore.setProcessing(true)
 
     method(props.submitUrl, {
-        preserveScroll: true,
+        preserveScroll: false,
         onSuccess: () => {
-            if (!props.isEdit) {
-                notifyNewUserCreated()
+            userStore.setProcessing(false)
+            
+            if (props.isEdit) {
+                // Trigger user updated action
+                userStore.userUpdated({
+                    id: props.user?.id,
+                    name: form.name,
+                    email: form.email,
+                    role: form.role
+                })
+            } else {
+                // Reset form for new user creation
                 form.reset()
+                // Trigger user created action
+                userStore.userCreated({
+                    name: form.name,
+                    email: form.email,
+                    role: form.role
+                })
             }
+            
+            // Navigate back to index
+            router.visit('/system/users')
         },
         onError: () => {
+            userStore.setProcessing(false)
             console.warn('Form submission failed.')
         }
     })
@@ -69,6 +100,17 @@ const handleSubmit = () => {
             <input v-model="form.password" type="password" class="form-control" />
             <small v-if="isEdit" class="text-muted">Leave blank if not changing password</small>
             <small v-if="errors.password" class="text-danger">{{ errors.password }}</small>
+        </div>
+
+        <div class="form-group mt-3">
+            <label>Role</label>
+            <select v-model="form.role" class="form-control">
+                <option value="">Select Role</option>
+                <option v-for="role in props.roles" :key="role.id" :value="role.name">
+                    {{ role.name }}
+                </option>
+            </select>
+            <small v-if="errors.role" class="text-danger">{{ errors.role }}</small>
         </div>
 
         <button type="submit" class="btn btn-primary mt-3" :disabled="form.processing">

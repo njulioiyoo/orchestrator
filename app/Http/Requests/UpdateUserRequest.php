@@ -12,7 +12,7 @@ class UpdateUserRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        return $this->user()->hasRole('Admin');
     }
 
     /**
@@ -30,6 +30,7 @@ class UpdateUserRequest extends FormRequest
                 Rule::unique('users', 'email')->ignore($this->route('id')),
             ],
             'password' => 'nullable|string|min:6',
+            'role' => 'required|exists:roles,name'
         ];
     }
 }

@@ -11,7 +11,10 @@
         <div class="row clearfix">
             <div class="col-md-12">
                 <div class="card">
-                    <PageHeaderWithCreateButton title="Users" buttonLink="/system/users/create" />
+                    <PageHeaderWithCreateButton 
+                        title="Users" 
+                        :buttonLink="canCreateUsers ? '/system/users/create' : null"
+                        v-permission="'create users'" />
 
                     <ReusableDataTable ref="usersDataTable" :data-url="dataUrl" :columns="tableColumns"
                         :delete-url="deleteUrl" :auto-refresh="true" :refresh-interval="30000"
@@ -27,15 +30,17 @@ import AppLayout from '@/Layouts/AppLayout.vue'
 import Breadcrumb from '@/Components/Breadcrumb.vue'
 import PageHeaderWithCreateButton from '@/components/page-parts/PageHeaderWithCreateButton.vue'
 import ReusableDataTable from '@/components/table/ReusableDataTable.vue'
-import { ref, onMounted, onBeforeUnmount } from 'vue'
-import { usePage } from '@inertiajs/vue3'
+import { ref, watch, onMounted } from 'vue'
+import { usePermissions } from '@/composables/usePermissions.js'
+import { useUserStore } from '@/stores/userStore.js'
 
 defineOptions({
     layout: AppLayout
 })
 
-const page = usePage()
 const usersDataTable = ref(null)
+const { canCreateUsers, canEditUsers, canDeleteUsers } = usePermissions()
+const userStore = useUserStore()
 
 // Breadcrumb configuration
 const breadcrumbItems = [
@@ -92,112 +97,53 @@ const tableColumns = [
     }
 ]
 
-// Event handlers
+// Function to reload DataTable
+const reloadTable = () => {
+    if (usersDataTable.value) {
+        console.log('Reloading DataTable...')
+        usersDataTable.value.reloadDataTable()
+    }
+}
+
+// Simple event handlers for DataTable
 const onDataLoaded = (data) => {
     console.log('Data loaded:', data.length, 'records')
 }
 
 const onDeleteSuccess = ({ id, response }) => {
     console.log('User deleted successfully:', id)
+    // Trigger user deleted in store
+    userStore.userDeleted(id)
 }
 
 const onError = (error) => {
     console.error('DataTable error:', error)
 }
 
-// Function untuk reload data dari luar komponen
-const reloadTable = () => {
-    if (usersDataTable.value) {
-        usersDataTable.value.reloadDataTable()
-    }
-}
-
-// Cek localStorage untuk user baru dibuat
-const checkAndHandleNewUserCreated = () => {
-    try {
-        const newUserCreated = localStorage.getItem('newUserCreated')
-
-        if (newUserCreated === 'true') {
-            console.log('New user created flag detected, reloading table')
-            localStorage.removeItem('newUserCreated')
-            localStorage.removeItem('newUserTimestamp')
-
-            // Reload table
+// Watch for store changes to refresh DataTable
+watch(
+    () => userStore.userTableRefreshTrigger,
+    (newValue, oldValue) => {
+        if (newValue !== oldValue && newValue > 0) {
+            console.log('Store refresh trigger detected, reloading table')
             setTimeout(() => {
                 reloadTable()
-            }, 500)
+            }, 100) // Small delay to ensure any navigation is complete
         }
-    } catch (error) {
-        console.error('Error checking localStorage:', error)
     }
-}
+)
 
-// Event handlers
-const userCreatedHandler = () => {
-    console.log('Event user-created terdeteksi')
-    reloadTable()
-}
-
-const inertiaNavigationHandler = (event) => {
-    const detail = event?.detail || {}
-    const url = detail?.page?.url || window.location.pathname
-
-    if (url && url === '/system/users') {
-        setTimeout(checkAndHandleNewUserCreated, 100)
-    }
-}
-
-const inertiaFinishHandler = (event) => {
-    const detail = event?.detail || {}
-    const url = detail?.page?.url || window.location.pathname
-
-    if (url && url === '/system/users') {
-        checkAndHandleNewUserCreated()
-    }
-}
-
-// Lifecycle hooks
+// Lifecycle
 onMounted(() => {
-    console.log('Users page mounted')
-
-    // Setup event listeners
-    window.addEventListener('user-created', userCreatedHandler)
-    window.addEventListener('inertia:navigate', inertiaNavigationHandler)
-    window.addEventListener('inertia:finish', inertiaFinishHandler)
-
-    // Tab visibility change handler
-    const visibilityChangeHandler = () => {
-        if (document.visibilityState === 'visible') {
-            console.log('Tab menjadi aktif, checking for updates')
-            checkAndHandleNewUserCreated()
-        }
-    }
-    document.addEventListener('visibilitychange', visibilityChangeHandler)
-
-    // Check for flash messages or localStorage flags
-    if (page.props.flash && page.props.flash.success) {
-        console.log('Flash message detected:', page.props.flash.success)
+    console.log('Users Index mounted')
+    
+    // Check if there's a recent action when component mounts
+    const lastAction = userStore.getLastAction()
+    if (lastAction && lastAction.timestamp > Date.now() - 5000) { // Within last 5 seconds
+        console.log('Recent user action detected on mount:', lastAction)
         setTimeout(() => {
             reloadTable()
-        }, 1000)
-    } else {
-        // Check localStorage on mount
-        checkAndHandleNewUserCreated()
+        }, 500)
     }
-
-    // Cleanup pada unmount
-    onBeforeUnmount(() => {
-        console.log('Users page unmounting, cleaning up event listeners')
-        window.removeEventListener('user-created', userCreatedHandler)
-        window.removeEventListener('inertia:navigate', inertiaNavigationHandler)
-        window.removeEventListener('inertia:finish', inertiaFinishHandler)
-        document.removeEventListener('visibilitychange', visibilityChangeHandler)
-    })
-})
-
-// Expose functions untuk debugging atau penggunaan dari luar
-defineExpose({
-    reloadTable,
-    getDataTableInstance: () => usersDataTable.value?.getDataTableInstance()
 })
 </script>

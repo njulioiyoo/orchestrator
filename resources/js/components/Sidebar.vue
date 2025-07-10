@@ -8,7 +8,7 @@
                 <div class="dropdown">
                     <span>Welcome,</span>
                     <a href="javascript:void(0);" class="dropdown-toggle user-name"
-                        data-toggle="dropdown"><strong>Pamela Petrus</strong></a>
+                        data-toggle="dropdown"><strong>{{ user?.name || 'User' }}</strong></a>
                     <ul class="dropdown-menu dropdown-menu-right account">
                         <li><a href="page-profile2.html"><i class="icon-user"></i>My Profile</a></li>
                         <li><a href="app-inbox.html"><i class="icon-envelope-open"></i>Messages</a></li>
@@ -49,45 +49,20 @@
                 <div class="tab-pane active" id="menu">
                     <nav id="left-sidebar-nav" class="sidebar-nav">
                         <ul id="main-menu" class="metismenu li_animation_delay">
-                            <li class="active">
-                                <a href="#Dashboard" class="has-arrow"><i
-                                        class="fa fa-dashboard"></i><span>Dashboard</span></a>
-                                <ul>
-                                    <li class="active"><a href="index.html">Analytical</a></li>
-                                    <li><a href="h-menu.html">Analytical H-Menu</a></li>
-                                    <li><a href="index9.html">IoT Dashboard</a></li>
-                                    <li><a href="index2.html">Demographic</a></li>
-                                    <li><a href="index6.html">Project Board</a></li>
-                                    <li><a href="index7.html">Crypto Dashboard</a></li>
-                                    <li><a href="index8.html">eCommerce</a></li>
-                                </ul>
+                            <li class="active" v-permission="'view dashboard'">
+                                <a href="/dashboard"><i class="fa fa-dashboard"></i><span>Dashboard</span></a>
                             </li>
-                            <li>
-                                <a href="#App" class="has-arrow"><i class="fa fa-th-large"></i><span>Ready
-                                        App</span></a>
+                            <li v-permission:role="'Admin'">
+                                <a href="#System" class="has-arrow"><i class="fa fa-cog"></i><span>System</span></a>
                                 <ul>
-                                    <li><a href="app-inbox.html">Inbox</a></li>
-                                    <li><a href="app-chat.html">Chat</a></li>
-                                    <li><a href="app-calendar.html">Calendar</a></li>
-                                    <li><a href="app-contact.html">Contact list</a></li>
-                                    <li><a href="app-contact-grid.html">Contact Card <span
-                                                class="badge badge-warning float-right">New</span></a></li>
-                                    <li><a href="app-taskboard.html">Taskboard</a></li>
-                                    <li><a href="javascript:void(0);"><span>Blog</span></a>
-                                        <ul>
-                                            <li><a href="blog-dashboard.html">Dashboard</a></li>
-                                            <li><a href="blog-post.html">New Post</a></li>
-                                            <li><a href="blog-list.html">Blog List</a></li>
-                                            <li><a href="blog-details.html">Blog Detail</a></li>
-                                        </ul>
+                                    <li>
+                                        <a href="/system/users">Users</a>
                                     </li>
-                                    <li><a href="javascript:void(0);"><span>File Manager</span></a>
-                                        <ul>
-                                            <li><a href="file-dashboard.html">Dashboard</a></li>
-                                            <li><a href="file-documents.html">Documents</a></li>
-                                            <li><a href="file-media.html">Media</a></li>
-                                            <li><a href="file-images.html">Images</a></li>
-                                        </ul>
+                                    <li>
+                                        <a href="/system/roles">Roles</a>
+                                    </li>
+                                    <li>
+                                        <a href="/system/permissions">Permissions</a>
                                     </li>
                                 </ul>
                             </li>
@@ -422,6 +397,9 @@
 
 <script setup>
 import { router } from '@inertiajs/vue3'
+import { usePermissions } from '@/composables/usePermissions.js'
+
+const { user } = usePermissions()
 
 const logout = () => {
     router.post('/logout')

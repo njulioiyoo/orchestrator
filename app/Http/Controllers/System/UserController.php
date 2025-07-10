@@ -9,9 +9,12 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Inertia\Inertia;
 use Yajra\DataTables\Facades\DataTables;
+use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
+    // Permission middleware is now handled in routes
+
     public function index()
     {
         return Inertia::render('system/users/Index');
@@ -20,17 +23,20 @@ class UserController extends Controller
     public function data(Request $request)
     {
         if ($request->ajax()) {
-            $query = User::query();
+            $query = User::with('roles');
 
             return DataTables::of($query)
                 ->addIndexColumn()
+                ->addColumn('roles', function ($row) {
+                    return $row->roles->pluck('name')->join(', ');
+                })
                 ->addColumn('action', function ($row) {
                     $editUrl = route('system.users.edit', $row->id);
                     return '
-                        <a href="' . $editUrl . '" class="btn btn-info" title="Edit">
+                        <a href="' . $editUrl . '" class="btn btn-info btn-sm" title="Edit">
                             <i class="fa fa-edit"></i>
                         </a>
-                        <button type="button" data-id="' . $row->id . '" class="btn btn-danger js-delete" title="Delete">
+                        <button type="button" data-id="' . $row->id . '" class="btn btn-danger btn-sm js-delete" title="Delete">
                             <i class="fa fa-trash-o"></i>
                         </button>
                     ';
@@ -44,16 +50,24 @@ class UserController extends Controller
 
     public function create()
     {
-        return Inertia::render('system/users/Create');
+        $roles = Role::all();
+        return Inertia::render('system/users/FormPage', [
+            'roles' => $roles
+        ]);
     }
 
     public function store(StoreUserRequest $request)
     {
-        User::create([
+        $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => bcrypt($request->password),
         ]);
+
+        // Assign role
+        if ($request->role) {
+            $user->assignRole($request->role);
+        }
 
         return redirect()->route('system.users.index')
             ->with('success', 'User created successfully.');
@@ -61,9 +75,13 @@ class UserController extends Controller
 
     public function edit($id)
     {
-        $user = User::findOrFail($id);
-        return Inertia::render('system/users/Edit', [
+        $user = User::with('roles')->findOrFail($id);
+        $roles = Role::all();
+
+        return Inertia::render('system/users/FormPage', [
             'user' => $user,
+            'roles' => $roles,
+            'userRoles' => $user->roles->pluck('name')->toArray()
         ]);
     }
 
@@ -77,13 +95,27 @@ class UserController extends Controller
             'password' => $request->filled('password') ? bcrypt($request->password) : $user->password,
         ]);
 
+        // Sync role
+        if ($request->role) {
+            $user->syncRoles([$request->role]);
+        } else {
+            $user->syncRoles([]);
+        }
+
         return redirect()->route('system.users.index')
-            ->with('success', 'User updated successfully.');
+            ->with('success', 'User updated successfully.')
+            ->with('user_updated', true);
     }
 
     public function destroy($id)
     {
         $user = User::findOrFail($id);
+
+        // Prevent deletion of current user
+        if ($user->id === auth()->id()) {
+            return response()->json(['message' => 'Cannot delete your own account.'], 422);
+        }
+
         $user->delete();
 
         return response()->json(['message' => 'User deleted successfully.'], 200);
