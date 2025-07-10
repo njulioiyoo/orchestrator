@@ -11,7 +11,7 @@ class UpdateRoleRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return auth()->user()->hasRole('Admin');
     }
 
     /**
@@ -21,8 +21,12 @@ class UpdateRoleRequest extends FormRequest
      */
     public function rules(): array
     {
+        $role = $this->route('id');
+        
         return [
-            //
+            'name' => 'required|string|max:255|unique:roles,name,' . $role->id,
+            'permissions' => 'nullable|array',
+            'permissions.*' => 'exists:permissions,name'
         ];
     }
 }

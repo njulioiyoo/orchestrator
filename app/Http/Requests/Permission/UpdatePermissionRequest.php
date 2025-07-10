@@ -11,7 +11,7 @@ class UpdatePermissionRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return auth()->user()->hasRole('Admin');
     }
 
     /**
@@ -21,8 +21,11 @@ class UpdatePermissionRequest extends FormRequest
      */
     public function rules(): array
     {
+        $permission = $this->route('id');
+        
         return [
-            //
+            'name' => 'required|string|max:255|unique:permissions,name,' . $permission->id,
+            'group' => 'nullable|string|max:100'
         ];
     }
 }
