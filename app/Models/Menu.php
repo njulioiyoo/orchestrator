@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use OwenIt\Auditing\Contracts\Auditable;
 use OwenIt\Auditing\Auditable as AuditableTrait;
+use App\Traits\EncryptedRouteKey;
 
 class Menu extends Model implements Auditable
 {
-    use AuditableTrait;
+    use EncryptedRouteKey, AuditableTrait;
     
     protected $fillable = [
         'name',
@@ -28,6 +29,8 @@ class Menu extends Model implements Auditable
         'permissions' => 'array',
         'is_active' => 'boolean'
     ];
+
+    protected $appends = ['encrypted_id'];
 
     public function parent(): BelongsTo
     {

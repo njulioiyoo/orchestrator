@@ -276,7 +276,7 @@ watch(adminPermission, (newValue) => {
 const submit = () => {
     processing.value = true
     
-    router.put(`/system/menus/${props.menu.id}`, form.value, {
+    router.put(`/system/menus/${props.menu.encrypted_id}`, form.value, {
         onSuccess: (page) => {
             // Refresh menu store after successful update
             menuStore.fetchMenus()

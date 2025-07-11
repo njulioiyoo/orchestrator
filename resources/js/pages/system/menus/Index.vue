@@ -51,7 +51,7 @@
                                             </td>
                                             <td>
                                                 <div class="btn-group" role="group">
-                                                    <a :href="`/system/menus/${menu.id}/edit`" class="btn btn-sm btn-warning">
+                                                    <a :href="`/system/menus/${menu.encrypted_id}/edit`" class="btn btn-sm btn-warning">
                                                         <i class="fa fa-edit"></i>
                                                     </a>
                                                     <button @click="deleteMenu(menu)" class="btn btn-sm btn-danger">
@@ -80,7 +80,7 @@
                                                 </td>
                                                 <td>
                                                     <div class="btn-group" role="group">
-                                                        <a :href="`/system/menus/${child.id}/edit`" class="btn btn-sm btn-warning">
+                                                        <a :href="`/system/menus/${child.encrypted_id}/edit`" class="btn btn-sm btn-warning">
                                                             <i class="fa fa-edit"></i>
                                                         </a>
                                                         <button @click="deleteMenu(child)" class="btn btn-sm btn-danger">
@@ -109,7 +109,7 @@
                                                 </td>
                                                 <td>
                                                     <div class="btn-group" role="group">
-                                                        <a :href="`/system/menus/${grandchild.id}/edit`" class="btn btn-sm btn-warning">
+                                                        <a :href="`/system/menus/${grandchild.encrypted_id}/edit`" class="btn btn-sm btn-warning">
                                                             <i class="fa fa-edit"></i>
                                                         </a>
                                                         <button @click="deleteMenu(grandchild)" class="btn btn-sm btn-danger">
@@ -169,7 +169,7 @@ onMounted(() => {
 
 const deleteMenu = (menu) => {
     if (confirm(`Are you sure you want to delete the menu "${menu.label}"?`)) {
-        router.delete(`/system/menus/${menu.id}`, {
+        router.delete(`/system/menus/${menu.encrypted_id}`, {
             onSuccess: () => {
                 // Remove from store
                 menuStore.removeMenu(menu.id)

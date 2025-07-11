@@ -74,9 +74,9 @@ Route::middleware('auth')->group(function () {
             Route::get('/', [MenuController::class, 'index'])->name('system.menus.index');
             Route::get('/create', [MenuController::class, 'create'])->name('system.menus.create');
             Route::post('/', [MenuController::class, 'store'])->name('system.menus.store');
-            Route::get('/{menu}/edit', [MenuController::class, 'edit'])->name('system.menus.edit');
-            Route::put('/{menu}', [MenuController::class, 'update'])->name('system.menus.update');
-            Route::delete('/{menu}', [MenuController::class, 'destroy'])->name('system.menus.destroy');
+            Route::get('/{id}/edit', [MenuController::class, 'edit'])->name('system.menus.edit');
+            Route::put('/{id}', [MenuController::class, 'update'])->name('system.menus.update');
+            Route::delete('/{id}', [MenuController::class, 'destroy'])->name('system.menus.destroy');
             Route::post('/update-order', [MenuController::class, 'updateOrder'])->name('system.menus.updateOrder');
         });
     });

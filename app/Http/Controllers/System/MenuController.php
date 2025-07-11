@@ -53,34 +53,34 @@ class MenuController extends Controller
             ->with('success', 'Menu berhasil ditambahkan.');
     }
 
-    public function edit(Menu $menu)
+    public function edit(Menu $id)
     {
         $parentMenus = Menu::whereNull('parent_id')
-            ->where('id', '!=', $menu->id)
+            ->where('id', '!=', $id->id)
             ->ordered()
             ->get();
 
         return Inertia::render('system/menus/Edit', [
-            'menu' => $menu,
+            'menu' => $id,
             'parentMenus' => $parentMenus
         ]);
     }
 
-    public function update(UpdateMenuRequest $request, Menu $menu)
+    public function update(UpdateMenuRequest $request, Menu $id)
     {
-        $menu->update($request->validated());
+        $id->update($request->validated());
 
         return redirect()->route('system.menus.index')
             ->with('success', 'Menu berhasil diperbarui.');
     }
 
-    public function destroy(Menu $menu)
+    public function destroy(Menu $id)
     {
-        if ($menu->children()->count() > 0) {
+        if ($id->children()->count() > 0) {
             return back()->withErrors(['error' => 'Menu tidak dapat dihapus karena memiliki sub-menu.']);
         }
 
-        $menu->delete();
+        $id->delete();
 
         return redirect()->route('system.menus.index')
             ->with('success', 'Menu berhasil dihapus.');

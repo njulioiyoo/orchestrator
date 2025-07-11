@@ -51,6 +51,7 @@ class HandleInertiaRequests extends Middleware
                 'error' => session('error'),
                 'user_updated' => session('user_updated'),
                 'message' => session('message'),
+                'login_success' => session('login_success'),
             ],
             'csrf_token' => csrf_token(),
         ];

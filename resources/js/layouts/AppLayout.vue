@@ -38,12 +38,13 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { Head } from '@inertiajs/vue3'
+import { Head, usePage } from '@inertiajs/vue3'
 import Navbar from '@/components/Navbar.vue'
 import Sidebar from '@/components/Sidebar.vue'
 import Rightbar from '@/components/Rightbar.vue'
 
 const showLoader = ref(true)
+const { props } = usePage()
 
 // Function to load external JS
 const loadScript = (src) => {
@@ -66,9 +67,6 @@ onMounted(async () => {
             await loadScript('/assets/bundles/libscripts.bundle.js')
             await loadScript('/assets/bundles/vendorscripts.bundle.js')
 
-            // ✅ Now jQuery should be available from bundles
-            console.log('jQuery version after bundles:', window.jQuery?.fn?.jquery)
-
             // ✅ Make sure jQuery is globally available
             window.$ = window.jQuery = window.jQuery || $
 
@@ -81,10 +79,6 @@ onMounted(async () => {
                 // Try different CDN
                 await loadScript('https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js')
             }
-
-            console.log('DataTable loaded:', !!(window.jQuery && window.jQuery.fn.DataTable))
-            console.log('DataTable function type:', typeof window.jQuery?.fn?.DataTable)
-            console.log('jQuery.fn keys containing DataTable:', Object.keys(window.jQuery.fn).filter(key => key.toLowerCase().includes('data')))
 
             // Ensure DataTable is fully registered
             await new Promise(resolve => setTimeout(resolve, 300))
@@ -109,13 +103,59 @@ onMounted(async () => {
                 console.warn('Failed to load index.js:', error)
             }
 
-            // ✅ Trigger event after everything is loaded
-            console.log('Triggering jquery-datatables-loaded event')
+            // Override any existing toastr welcome messages
+            if (typeof toastr !== 'undefined') {
+                // Clear any existing toastr messages first
+                toastr.clear();
+                
+                // Clear any persistent toast containers that might have been created by template
+                setTimeout(() => {
+                    const toastContainers = document.querySelectorAll('#toast-container, .toast-container');
+                    toastContainers.forEach(container => {
+                        const welcomeToasts = container.querySelectorAll('.toast:has(.toast-message)');
+                        welcomeToasts.forEach(toast => {
+                            const message = toast.querySelector('.toast-message');
+                            if (message && message.textContent.includes('Hello, welcome to Iconic')) {
+                                toast.remove();
+                            }
+                        });
+                    });
+                }, 100);
+
+                // Check for login success message from Inertia props
+                const loginSuccess = props.flash?.login_success;
+                if (loginSuccess) {
+                    toastr.info(loginSuccess.message);
+                }
+            }
+
             window.dispatchEvent(new Event('jquery-datatables-loaded'))
 
         } catch (error) {
             console.error('Error loading scripts:', error)
         }
     }, 1000) // after 1s
+})
+
+// Additional cleanup for persistent welcome toasts
+onMounted(() => {
+    // Run cleanup multiple times to catch any delayed toast creation
+    const cleanupIntervals = [500, 2000, 5000];
+    
+    cleanupIntervals.forEach(delay => {
+        setTimeout(() => {
+            const toastContainers = document.querySelectorAll('#toast-container, .toast-container');
+            toastContainers.forEach(container => {
+                const toasts = container.querySelectorAll('.toast');
+                toasts.forEach(toast => {
+                    const message = toast.querySelector('.toast-message');
+                    if (message && message.textContent.includes('Hello, welcome to Iconic')) {
+                        toast.remove();
+                        console.log('Removed persistent welcome toast');
+                    }
+                });
+            });
+        }, delay);
+    });
 })
 </script>

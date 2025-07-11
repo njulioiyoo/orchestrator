@@ -7,7 +7,6 @@ $(function() {
     toastr.options.closeButton = true;
     toastr.options.positionClass = 'toast-bottom-right';
     toastr.options.showDuration = 1000;
-    toastr['info']('Hello, welcome to Iconic, a unique admin Template.');
 
     // Patients Analytics Report
     $(document).ready(function(){

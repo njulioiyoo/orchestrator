@@ -26,6 +26,13 @@ class AuthController extends Controller
         }
 
         $request->session()->regenerate();
+        
+        $user = Auth::user();
+        session()->flash('login_success', [
+            'message' => 'Hello, welcome to Iconic ' . $user->name,
+            'user_name' => $user->name
+        ]);
+        
         return redirect()->route('dashboard');
     }
 
