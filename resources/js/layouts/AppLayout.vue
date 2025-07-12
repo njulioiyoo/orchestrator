@@ -25,13 +25,20 @@
 
         <!-- Main content -->
         <div v-else>
-            <Navbar />
+            <Navbar @search="handleGlobalSearch" />
             <Sidebar />
             <Rightbar />
 
             <div id="main-content">
                 <slot />
             </div>
+
+            <!-- Global Search Modal -->
+            <GlobalSearchModal 
+                :show="showSearchModal"
+                :query="searchQuery"
+                @close="closeSearchModal"
+            />
         </div>
     </div>
 </template>
@@ -42,8 +49,11 @@ import { Head, usePage } from '@inertiajs/vue3'
 import Navbar from '@/components/Navbar.vue'
 import Sidebar from '@/components/Sidebar.vue'
 import Rightbar from '@/components/Rightbar.vue'
+import GlobalSearchModal from '@/components/GlobalSearchModal.vue'
 
 const showLoader = ref(true)
+const showSearchModal = ref(false)
+const searchQuery = ref('')
 const { props } = usePage()
 
 // Function to load external JS
@@ -136,6 +146,29 @@ onMounted(async () => {
         }
     }, 1000) // after 1s
 })
+
+// Global search functionality
+const handleGlobalSearch = (query) => {
+    searchQuery.value = query
+    showSearchModal.value = true
+    
+    // Show modal using Bootstrap if available
+    setTimeout(() => {
+        if (typeof window.$ !== 'undefined') {
+            window.$('#globalSearchModal').modal('show')
+        }
+    }, 100)
+}
+
+const closeSearchModal = () => {
+    showSearchModal.value = false
+    searchQuery.value = ''
+    
+    // Hide modal using Bootstrap if available
+    if (typeof window.$ !== 'undefined') {
+        window.$('#globalSearchModal').modal('hide')
+    }
+}
 
 // Additional cleanup for persistent welcome toasts
 onMounted(() => {

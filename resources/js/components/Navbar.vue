@@ -8,9 +8,18 @@
             </div>
 
             <div class="navbar-right">
-                <form id="navbar-search" class="navbar-form search-form">
-                    <input value="" class="form-control" placeholder="Search here..." type="text">
-                    <button type="button" class="btn btn-default"><i class="icon-magnifier"></i></button>
+                <form id="navbar-search" class="navbar-form search-form" @submit.prevent="handleSearch">
+                    <input 
+                        v-model="searchQuery"
+                        class="form-control" 
+                        placeholder="Search here..." 
+                        type="text"
+                        @keyup.enter="handleSearch"
+                        @input="handleSearchInput"
+                    >
+                    <button type="button" class="btn btn-default" @click="handleSearch">
+                        <i class="icon-magnifier"></i>
+                    </button>
                 </form>
 
                 <div id="navbar-menu">
@@ -93,7 +102,12 @@
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import { router } from '@inertiajs/vue3'
+
+const searchQuery = ref('')
+
+const emit = defineEmits(['search'])
 
 const logout = () => {
     router.post('/logout', {}, {
@@ -104,5 +118,21 @@ const logout = () => {
             }, 100)
         }
     })
+}
+
+const handleSearch = () => {
+    if (searchQuery.value.trim().length >= 2) {
+        emit('search', searchQuery.value.trim())
+    }
+}
+
+const handleSearchInput = () => {
+    // Debounced search - trigger search after user stops typing for 500ms
+    clearTimeout(window.searchTimeout)
+    window.searchTimeout = setTimeout(() => {
+        if (searchQuery.value.trim().length >= 2) {
+            emit('search', searchQuery.value.trim())
+        }
+    }, 500)
 }
 </script>

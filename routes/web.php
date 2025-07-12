@@ -88,6 +88,7 @@ Route::middleware('auth')->group(function () {
         });
     });
 
-    // API endpoint untuk sidebar menu
+    // API endpoints
     Route::get('/api/menus', [MenuController::class, 'getMenusJson'])->name('api.menus');
+    Route::get('/api/search', [\App\Http\Controllers\Api\SearchController::class, 'search'])->name('api.search');
 });
