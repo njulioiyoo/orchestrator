@@ -54,12 +54,11 @@
                             <div class="col-lg-3 col-md-6" v-for="(check, name) in healthData.checks" :key="name">
                                 <div class="info-box-4 hover-zoom-effect">
                                     <div class="icon">
-                                        <i :class="getHealthIcon(name)" 
-                                           :class="{
+                                        <i :class="[getHealthIcon(name), {
                                                'text-success': check.status === 'healthy',
                                                'text-warning': check.status === 'warning',
                                                'text-danger': check.status === 'unhealthy'
-                                           }"></i>
+                                           }]"></i>
                                     </div>
                                     <div class="content">
                                         <div class="text">{{ capitalizeFirst(name) }}</div>
