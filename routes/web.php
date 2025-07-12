@@ -91,4 +91,6 @@ Route::middleware('auth')->group(function () {
     // API endpoints
     Route::get('/api/menus', [MenuController::class, 'getMenusJson'])->name('api.menus');
     Route::get('/api/search', [\App\Http\Controllers\Api\SearchController::class, 'search'])->name('api.search');
+    Route::get('/api/metrics/performance', [\App\Http\Controllers\Api\MetricsController::class, 'performance'])->name('api.metrics.performance');
+    Route::get('/api/metrics/health', [\App\Http\Controllers\Api\MetricsController::class, 'health'])->name('api.metrics.health');
 });
