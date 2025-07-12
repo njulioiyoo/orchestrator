@@ -28,6 +28,7 @@ const form = useForm({
     name: props.user?.name ?? '',
     email: props.user?.email ?? '',
     password: '',
+    password_confirmation: '',
     role: props.userRoles?.[0] ?? '', // Single role instead of array
 })
 
@@ -110,6 +111,12 @@ const handleSubmit = () => {
             <input v-model="form.password" type="password" class="form-control" />
             <small v-if="isEdit" class="text-muted">Leave blank if not changing password</small>
             <small v-if="errors.password" class="text-danger">{{ errors.password }}</small>
+        </div>
+
+        <div class="form-group mt-3">
+            <label>{{ isEdit ? 'Confirm New Password' : 'Confirm Password' }}</label>
+            <input v-model="form.password_confirmation" type="password" class="form-control" />
+            <small v-if="errors.password_confirmation" class="text-danger">{{ errors.password_confirmation }}</small>
         </div>
 
         <div class="form-group mt-3">
