@@ -50,6 +50,7 @@
 import AppLayout from '@/Layouts/AppLayout.vue'
 import Breadcrumb from '@/Components/Breadcrumb.vue'
 import { useForm, usePage, Link } from '@inertiajs/vue3'
+import { useToast } from '@/composables/useToast.js'
 
 defineOptions({
     layout: AppLayout
@@ -57,6 +58,7 @@ defineOptions({
 
 const page = usePage()
 const errors = page.props.errors || {}
+const toast = useToast()
 
 const form = useForm({
     name: '',
@@ -73,8 +75,18 @@ const breadcrumbItems = [
 const handleSubmit = () => {
     form.post('/system/permissions', {
         preserveScroll: true,
+        onBefore: () => {
+            toast.loading('Membuat permission...')
+        },
         onSuccess: () => {
+            toast.clear()
+            toast.success('Permission berhasil dibuat!')
             form.reset()
+        },
+        onError: (errors) => {
+            toast.clear()
+            toast.error('Gagal membuat permission. Silakan periksa form dan coba lagi.')
+            console.error('Permission creation failed:', errors)
         }
     })
 }

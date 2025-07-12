@@ -2,6 +2,7 @@
 import { useForm, usePage, Link, router } from '@inertiajs/vue3'
 import { ref } from 'vue'
 import { useUserStore } from '@/stores/userStore.js'
+import { useToast } from '@/composables/useToast.js'
 
 const props = defineProps({
     user: {
@@ -39,6 +40,7 @@ const errors = usePage().props.errors || {}
 
 // Use Pinia store for state management
 const userStore = useUserStore()
+const toast = useToast()
 
 const handleSubmit = () => {
     const method = props.isEdit ? form.put.bind(form) : form.post.bind(form)
@@ -47,8 +49,12 @@ const handleSubmit = () => {
 
     method(props.submitUrl, {
         preserveScroll: false,
+        onBefore: () => {
+            toast.loading(props.isEdit ? 'Memperbarui user...' : 'Membuat user baru...')
+        },
         onSuccess: () => {
             userStore.setProcessing(false)
+            toast.clear()
             
             if (props.isEdit) {
                 // Trigger user updated action
@@ -58,6 +64,7 @@ const handleSubmit = () => {
                     email: form.email,
                     role: form.role
                 })
+                toast.success('User berhasil diperbarui!')
             } else {
                 // Reset form for new user creation
                 form.reset()
@@ -67,14 +74,17 @@ const handleSubmit = () => {
                     email: form.email,
                     role: form.role
                 })
+                toast.success('User berhasil dibuat!')
             }
             
             // Navigate back to index
             router.visit('/system/users')
         },
-        onError: () => {
+        onError: (errors) => {
             userStore.setProcessing(false)
-            console.warn('Form submission failed.')
+            toast.clear()
+            toast.error(props.isEdit ? 'Gagal memperbarui user. Silakan periksa form dan coba lagi.' : 'Gagal membuat user. Silakan periksa form dan coba lagi.')
+            console.error('User form submission failed:', errors)
         }
     })
 }

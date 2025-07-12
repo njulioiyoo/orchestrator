@@ -50,6 +50,7 @@
 import AppLayout from '@/Layouts/AppLayout.vue'
 import Breadcrumb from '@/Components/Breadcrumb.vue'
 import { useForm, usePage, Link } from '@inertiajs/vue3'
+import { useToast } from '@/composables/useToast.js'
 
 defineOptions({
     layout: AppLayout
@@ -64,6 +65,7 @@ const props = defineProps({
 
 const page = usePage()
 const errors = page.props.errors || {}
+const toast = useToast()
 
 const form = useForm({
     name: props.permission.name,
@@ -79,7 +81,19 @@ const breadcrumbItems = [
 
 const handleSubmit = () => {
     form.put(`/system/permissions/${props.permission.encrypted_id}`, {
-        preserveScroll: true
+        preserveScroll: true,
+        onBefore: () => {
+            toast.loading('Memperbarui permission...')
+        },
+        onSuccess: () => {
+            toast.clear()
+            toast.success('Permission berhasil diperbarui!')
+        },
+        onError: (errors) => {
+            toast.clear()
+            toast.error('Gagal memperbarui permission. Silakan periksa form dan coba lagi.')
+            console.error('Permission update failed:', errors)
+        }
     })
 }
 </script>

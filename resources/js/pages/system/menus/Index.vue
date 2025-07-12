@@ -136,6 +136,7 @@ import Breadcrumb from '@/Components/Breadcrumb.vue'
 import PageHeaderWithCreateButton from '@/components/page-parts/PageHeaderWithCreateButton.vue'
 import { router } from '@inertiajs/vue3'
 import { useMenuStore } from '@/stores/menuStore.js'
+import { useToast } from '@/composables/useToast.js'
 import { ref, onMounted } from 'vue'
 
 defineOptions({
@@ -147,6 +148,7 @@ const props = defineProps({
 })
 
 const menuStore = useMenuStore()
+const toast = useToast()
 const sortedMenus = ref([])
 
 const breadcrumbItems = [
@@ -168,14 +170,24 @@ onMounted(() => {
 
 
 const deleteMenu = (menu) => {
-    if (confirm(`Are you sure you want to delete the menu "${menu.label}"?`)) {
+    if (confirm(`Apakah Anda yakin ingin menghapus menu "${menu.label}"?`)) {
         router.delete(`/system/menus/${menu.encrypted_id}`, {
+            onBefore: () => {
+                toast.loading('Menghapus menu...')
+            },
             onSuccess: () => {
+                toast.clear()
+                toast.success('Menu berhasil dihapus!')
+                
                 // Remove from store
                 menuStore.removeMenu(menu.id)
                 // Remove from local array
                 sortedMenus.value = sortedMenus.value.filter(m => m.id !== menu.id)
-                // Success message will be handled by flash message
+            },
+            onError: (errors) => {
+                toast.clear()
+                toast.error('Gagal menghapus menu. Silakan coba lagi.')
+                console.error('Menu deletion failed:', errors)
             }
         })
     }

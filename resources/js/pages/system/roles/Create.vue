@@ -57,6 +57,7 @@
 import AppLayout from '@/Layouts/AppLayout.vue'
 import Breadcrumb from '@/Components/Breadcrumb.vue'
 import { useForm, usePage, Link } from '@inertiajs/vue3'
+import { useToast } from '@/composables/useToast.js'
 
 defineOptions({ layout: AppLayout })
 
@@ -76,6 +77,7 @@ const props = defineProps({
 })
 
 const isEdit = !!props.role
+const toast = useToast()
 
 const form = useForm({
     name: props.role?.name ?? '',
@@ -97,10 +99,22 @@ const handleSubmit = () => {
 
     method(url, {
         preserveScroll: true,
+        onBefore: () => {
+            toast.loading(isEdit ? 'Memperbarui role...' : 'Membuat role...')
+        },
         onSuccess: () => {
-            if (!isEdit) {
+            toast.clear()
+            if (isEdit) {
+                toast.success('Role berhasil diperbarui!')
+            } else {
+                toast.success('Role berhasil dibuat!')
                 form.reset()
             }
+        },
+        onError: (errors) => {
+            toast.clear()
+            toast.error(isEdit ? 'Gagal memperbarui role. Silakan periksa form dan coba lagi.' : 'Gagal membuat role. Silakan periksa form dan coba lagi.')
+            console.error('Role form submission failed:', errors)
         }
     })
 }
