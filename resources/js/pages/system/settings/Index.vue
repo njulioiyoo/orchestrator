@@ -230,11 +230,19 @@
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue'
 import Breadcrumb from '@/Components/Breadcrumb.vue'
+import { useToast } from '@/composables/useToast.js'
 import { ref, reactive, onMounted } from 'vue'
 import { useForm } from '@inertiajs/vue3'
 
 defineOptions({
     layout: AppLayout
+})
+
+// Debug props on mount
+onMounted(() => {
+    console.log('Settings component mounted')
+    console.log('Props received:', props)
+    console.log('settingsGrouped:', props.settingsGrouped)
 })
 
 const props = defineProps({
@@ -243,6 +251,8 @@ const props = defineProps({
         required: true
     }
 })
+
+const toast = useToast()
 
 // Breadcrumb configuration
 const breadcrumbItems = [
@@ -254,18 +264,35 @@ const breadcrumbItems = [
 // Initialize form with all settings
 const initializeFormData = () => {
     const formData = {}
-    Object.values(props.settingsGrouped).forEach(group => {
-        group.forEach(setting => {
-            // Convert values based on type
-            let value = setting.value
-            if (setting.type === 'boolean') {
-                value = value === '1' || value === true || value === 'true' ? 1 : 0
-            } else if (setting.type === 'number') {
-                value = parseFloat(value) || 0
+    
+    // Check if settingsGrouped exists and has data
+    if (!props.settingsGrouped || typeof props.settingsGrouped !== 'object') {
+        console.warn('settingsGrouped prop is not available or not an object')
+        return formData
+    }
+    
+    try {
+        Object.keys(props.settingsGrouped).forEach(groupName => {
+            const group = props.settingsGrouped[groupName]
+            if (Array.isArray(group)) {
+                group.forEach(setting => {
+                    if (setting && setting.key) {
+                        // Convert values based on type
+                        let value = setting.value || ''
+                        if (setting.type === 'boolean') {
+                            value = value === '1' || value === true || value === 'true' ? 1 : 0
+                        } else if (setting.type === 'number') {
+                            value = parseFloat(value) || 0
+                        }
+                        formData[setting.key] = value
+                    }
+                })
             }
-            formData[setting.key] = value
         })
-    })
+    } catch (error) {
+        console.error('Error initializing form data:', error)
+    }
+    
     return formData
 }
 
@@ -274,14 +301,40 @@ const form = useForm({
 })
 
 const updateSettings = () => {
-    form.put(route('system.settings.update'), {
-        onSuccess: () => {
-            // Success notification will be handled by the backend
-            console.log('Settings updated successfully')
+    console.log('Submitting settings:', form.settings)
+    
+    if (!form.settings || Object.keys(form.settings).length === 0) {
+        console.error('No settings data to submit')
+        toast.warning('Tidak ada data pengaturan untuk disimpan. Silakan muat ulang halaman.')
+        return
+    }
+    
+    form.put('/system/settings', {
+        onBefore: () => {
+            console.log('Form submission started')
+            // Show loading toast
+            toast.loading('Menyimpan pengaturan...')
+        },
+        onSuccess: (response) => {
+            console.log('Settings updated successfully', response)
+            // Show success toast notification
+            toast.clear() // Clear loading toast
+            toast.success('Pengaturan sistem berhasil diperbarui!')
         },
         onError: (errors) => {
             console.error('Error updating settings:', errors)
-            // Errors will be shown in the form fields
+            // Show error toast notification
+            toast.clear() // Clear loading toast
+            toast.error('Gagal memperbarui pengaturan. Silakan periksa form dan coba lagi.')
+            
+            // Log specific error details for debugging
+            if (errors.response) {
+                console.error('Response status:', errors.response.status)
+                console.error('Response data:', errors.response.data)
+            }
+        },
+        onFinish: () => {
+            console.log('Form submission finished')
         }
     })
 }

@@ -209,6 +209,7 @@ import AppLayout from '@/Layouts/AppLayout.vue'
 import Breadcrumb from '@/Components/Breadcrumb.vue'
 import { router } from '@inertiajs/vue3'
 import { useMenuStore } from '@/stores/menuStore.js'
+import { useToast } from '@/composables/useToast.js'
 import { ref, watch } from 'vue'
 
 defineOptions({
@@ -221,6 +222,7 @@ const props = defineProps({
 })
 
 const menuStore = useMenuStore()
+const toast = useToast()
 
 const form = ref({
     name: '',
@@ -259,6 +261,14 @@ const submit = () => {
         onSuccess: (page) => {
             // Refresh menu store after successful creation
             menuStore.fetchMenus()
+            
+            // Show success toast notification
+            toast.success('Menu berhasil ditambahkan!')
+        },
+        onError: (errors) => {
+            // Show error toast notification
+            toast.error('Gagal menambahkan menu. Silakan periksa form dan coba lagi.')
+            console.error('Menu creation errors:', errors)
         },
         onFinish: () => {
             processing.value = false
