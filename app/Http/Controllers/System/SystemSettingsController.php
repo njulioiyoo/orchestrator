@@ -14,10 +14,7 @@ class SystemSettingsController extends Controller
     {
         $settingsGrouped = SystemSetting::getAllGrouped();
         
-        // Debug untuk memastikan data terkirim
-        \Log::info('Settings data:', ['settingsGrouped' => $settingsGrouped->toArray()]);
-        
-        return Inertia::render('System/Settings/Index', [
+        return Inertia::render('system/settings/Index', [
             'settingsGrouped' => $settingsGrouped
         ]);
     }
