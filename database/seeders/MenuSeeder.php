@@ -28,7 +28,7 @@ class MenuSeeder extends Seeder
         // System Management Menu (only for admins)
         $systemMenu = Menu::create([
             'name' => 'system',
-            'label' => 'System Management',
+            'label' => 'System',
             'icon' => 'fa fa-cogs',
             'url' => null,
             'route' => null,
@@ -43,7 +43,7 @@ class MenuSeeder extends Seeder
         // User Management (child of System)
         Menu::create([
             'name' => 'users',
-            'label' => 'User Management',
+            'label' => 'User',
             'icon' => 'fa fa-users',
             'url' => '/system/users',
             'route' => 'system.users.index',
@@ -58,7 +58,7 @@ class MenuSeeder extends Seeder
         // Role Management (child of System)
         Menu::create([
             'name' => 'roles',
-            'label' => 'Role Management',
+            'label' => 'Role',
             'icon' => 'fa fa-user-circle',
             'url' => '/system/roles',
             'route' => 'system.roles.index',
@@ -73,7 +73,7 @@ class MenuSeeder extends Seeder
         // Permission Management (child of System)
         Menu::create([
             'name' => 'permissions',
-            'label' => 'Permission Management',
+            'label' => 'Permission',
             'icon' => 'fa fa-shield',
             'url' => '/system/permissions',
             'route' => 'system.permissions.index',
@@ -88,7 +88,7 @@ class MenuSeeder extends Seeder
         // Menu Management (child of System)
         Menu::create([
             'name' => 'menus',
-            'label' => 'Menu Management',
+            'label' => 'Menu',
             'icon' => 'fa fa-bars',
             'url' => '/system/menus',
             'route' => 'system.menus.index',
