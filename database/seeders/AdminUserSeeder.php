@@ -4,62 +4,59 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\User;
-use App\Models\Permission;
 use Spatie\Permission\Models\Role;
 
 class AdminUserSeeder extends Seeder
 {
     public function run()
     {
-        // First run the permission seeder to ensure permissions exist
-        $this->call(PermissionSeeder::class);
-        
-        // Find or create the user
-        $user = User::where('name', 'njulioiyoo')
-                   ->orWhere('email', 'njulioiyoo@example.com')
-                   ->first();
-        
-        if (!$user) {
-            // If user doesn't exist, try to find any user with similar name
-            $user = User::where('name', 'LIKE', '%julio%')->first();
+        // Create admin user
+        $adminUser = User::firstOrCreate(
+            ['email' => 'admin@orchestrator.local'],
+            [
+                'name' => 'Admin',
+                'email' => 'admin@orchestrator.local',
+                'password' => bcrypt('password'),
+                'email_verified_at' => now(),
+            ]
+        );
+
+        // Create regular user for testing
+        $regularUser = User::firstOrCreate(
+            ['email' => 'user@orchestrator.local'],
+            [
+                'name' => 'User',
+                'email' => 'user@orchestrator.local', 
+                'password' => bcrypt('password'),
+                'email_verified_at' => now(),
+            ]
+        );
+
+        // Assign roles
+        $adminRole = Role::where('name', 'admin')->first();
+        $userRole = Role::where('name', 'user')->first();
+
+        if ($adminRole) {
+            $adminUser->assignRole($adminRole);
+            $this->command->info("Assigned admin role to {$adminUser->name}");
         }
-        
-        if (!$user) {
-            $this->command->error('User njulioiyoo not found in database!');
-            $this->command->info('Available users:');
-            User::all()->each(function ($u) {
-                $this->command->line("- {$u->name} ({$u->email})");
-            });
-            return;
+
+        if ($userRole) {
+            $regularUser->assignRole($userRole);
+            $this->command->info("Assigned user role to {$regularUser->name}");
         }
-        
-        // Ensure Super Admin role exists with all permissions
-        $superAdminRole = Role::firstOrCreate([
-            'name' => 'Super Admin',
-            'guard_name' => 'web'
-        ]);
-        
-        // Give all permissions to Super Admin role
-        $permissions = Permission::all();
-        if ($permissions->count() > 0) {
-            $superAdminRole->givePermissionTo($permissions);
-            $this->command->info("Assigned {$permissions->count()} permissions to Super Admin role.");
-        }
-        
-        // Assign Super Admin role to user
-        if (!$user->hasRole('Super Admin')) {
-            $user->assignRole('Super Admin');
-            $this->command->info("Assigned Super Admin role to {$user->name}");
-        } else {
-            $this->command->info("{$user->name} already has Super Admin role");
-        }
-        
-        // Display user info
+
+        // Display credentials
         $this->command->line('');
-        $this->command->line("User Information:");
-        $this->command->line("Name: {$user->name}");
-        $this->command->line("Email: {$user->email}");
-        $this->command->line("Roles: " . implode(', ', $user->getRoleNames()->toArray()));
-        $this->command->line("Total Permissions: " . $user->getAllPermissions()->count());
+        $this->command->line('=== LOGIN CREDENTIALS ===');
+        $this->command->line('Admin User:');
+        $this->command->line("Email: admin@orchestrator.local");
+        $this->command->line("Password: password");
+        $this->command->line("Permissions: " . ($adminUser->getAllPermissions()->count() ?? 0));
+        $this->command->line('');
+        $this->command->line('Regular User:');
+        $this->command->line("Email: user@orchestrator.local");
+        $this->command->line("Password: password");
+        $this->command->line("Permissions: " . ($regularUser->getAllPermissions()->count() ?? 0));
     }
 }

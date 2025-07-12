@@ -10,109 +10,132 @@ class MenuSeeder extends Seeder
 {
     public function run(): void
     {
-        // Master Menu
-        $masterMenu = Menu::create([
-            'name' => 'master',
-            'label' => 'Master',
-            'icon' => 'fa fa-cogs',
-            'url' => null,
-            'route' => null,
+        // Dashboard Menu (accessible by all authenticated users)
+        Menu::create([
+            'name' => 'dashboard',
+            'label' => 'Dashboard',
+            'icon' => 'fa fa-dashboard',
+            'url' => '/dashboard',
+            'route' => 'dashboard',
             'parent_id' => null,
             'sort_order' => 1,
             'is_active' => true,
             'permissions' => [
-                ['type' => 'role', 'name' => 'Admin']
+                ['type' => 'permission', 'name' => 'view dashboard']
             ]
         ]);
 
-        // System Menu (child of Master)
+        // System Management Menu (only for admins)
         $systemMenu = Menu::create([
             'name' => 'system',
-            'label' => 'System',
-            'icon' => 'fa fa-database',
+            'label' => 'System Management',
+            'icon' => 'fa fa-cogs',
             'url' => null,
             'route' => null,
-            'parent_id' => $masterMenu->id,
-            'sort_order' => 1,
+            'parent_id' => null,
+            'sort_order' => 2,
             'is_active' => true,
             'permissions' => [
-                ['type' => 'role', 'name' => 'Admin']
+                ['type' => 'role', 'name' => 'admin']
             ]
         ]);
 
-        // Users Menu (child of System)
+        // User Management (child of System)
         Menu::create([
             'name' => 'users',
-            'label' => 'Users',
+            'label' => 'User Management',
             'icon' => 'fa fa-users',
             'url' => '/system/users',
-            'route' => null,
+            'route' => 'system.users.index',
             'parent_id' => $systemMenu->id,
             'sort_order' => 1,
             'is_active' => true,
             'permissions' => [
-                ['type' => 'role', 'name' => 'Admin']
+                ['type' => 'permission', 'name' => 'view users']
             ]
         ]);
 
-        // Roles Menu (child of System)
+        // Role Management (child of System)
         Menu::create([
             'name' => 'roles',
-            'label' => 'Roles',
+            'label' => 'Role Management',
             'icon' => 'fa fa-user-circle',
             'url' => '/system/roles',
-            'route' => null,
+            'route' => 'system.roles.index',
             'parent_id' => $systemMenu->id,
             'sort_order' => 2,
             'is_active' => true,
             'permissions' => [
-                ['type' => 'role', 'name' => 'Admin']
+                ['type' => 'permission', 'name' => 'view roles']
             ]
         ]);
 
-        // Permissions Menu (child of System)
+        // Permission Management (child of System)
         Menu::create([
             'name' => 'permissions',
-            'label' => 'Permissions',
+            'label' => 'Permission Management',
             'icon' => 'fa fa-shield',
             'url' => '/system/permissions',
-            'route' => null,
+            'route' => 'system.permissions.index',
             'parent_id' => $systemMenu->id,
             'sort_order' => 3,
             'is_active' => true,
             'permissions' => [
-                ['type' => 'role', 'name' => 'Admin']
+                ['type' => 'permission', 'name' => 'view permissions']
             ]
         ]);
 
-        // Audit Logs Menu (child of System)
+        // Menu Management (child of System)
+        Menu::create([
+            'name' => 'menus',
+            'label' => 'Menu Management',
+            'icon' => 'fa fa-bars',
+            'url' => '/system/menus',
+            'route' => 'system.menus.index',
+            'parent_id' => $systemMenu->id,
+            'sort_order' => 4,
+            'is_active' => true,
+            'permissions' => [
+                ['type' => 'permission', 'name' => 'view menus']
+            ]
+        ]);
+
+        // Audit Logs (child of System - accessible by users too)
         Menu::create([
             'name' => 'audits',
             'label' => 'Audit Logs',
             'icon' => 'fa fa-history',
             'url' => '/system/audits',
-            'route' => null,
-            'parent_id' => $systemMenu->id,
-            'sort_order' => 4,
-            'is_active' => true,
-            'permissions' => [
-                ['type' => 'role', 'name' => 'Admin']
-            ]
-        ]);
-
-        // Menus Management (child of System)
-        Menu::create([
-            'name' => 'menus',
-            'label' => 'Menus',
-            'icon' => 'fa fa-bars',
-            'url' => '/system/menus',
-            'route' => null,
+            'route' => 'system.audits.index',
             'parent_id' => $systemMenu->id,
             'sort_order' => 5,
             'is_active' => true,
             'permissions' => [
-                ['type' => 'role', 'name' => 'Admin']
+                ['type' => 'permission', 'name' => 'view audits']
             ]
         ]);
+
+        // System Settings (child of System)
+        Menu::create([
+            'name' => 'settings',
+            'label' => 'System Settings',
+            'icon' => 'fa fa-gear',
+            'url' => '/system/settings',
+            'route' => 'system.settings.index',
+            'parent_id' => $systemMenu->id,
+            'sort_order' => 6,
+            'is_active' => true,
+            'permissions' => [
+                ['type' => 'permission', 'name' => 'view system settings']
+            ]
+        ]);
+
+        $this->command->info('Menu structure created successfully.');
+        $this->command->info('Total menus: ' . Menu::count());
+        $this->command->line('Dashboard - accessible by: view dashboard permission');
+        $this->command->line('System Management - accessible by: admin role only');
+        $this->command->line('User/Role/Permission/Menu Management - accessible by: respective permissions');
+        $this->command->line('Audit Logs - accessible by: view audits permission (admin + user)');
+        $this->command->line('System Settings - accessible by: view system settings permission');
     }
 }
