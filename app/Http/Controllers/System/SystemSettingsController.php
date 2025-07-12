@@ -58,10 +58,13 @@ class SystemSettingsController extends Controller
         if (!empty($errors)) {
             return redirect()->back()
                 ->withErrors(['settings' => $errors])
-                ->withInput();
+                ->withInput()
+                ->with('error', 'Some settings could not be updated. Please check the errors below.');
         }
 
-        return redirect()->back()->with('success', "Successfully updated {$updated} settings");
+        return redirect()->back()
+            ->with('success', "Successfully updated {$updated} settings")
+            ->with('message', 'System settings have been updated successfully.');
     }
 
     private function validateSettingValue($setting, $value)
