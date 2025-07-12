@@ -21,12 +21,18 @@ class SystemSettingsController extends Controller
 
     public function update(Request $request)
     {
+        \Log::info('SystemSettings update started', [
+            'request_data' => $request->all(),
+            'user_id' => auth()->id()
+        ]);
+
         $validator = Validator::make($request->all(), [
             'settings' => 'required|array',
             'settings.*' => 'required'
         ]);
 
         if ($validator->fails()) {
+            \Log::error('SystemSettings validation failed', ['errors' => $validator->errors()]);
             return redirect()->back()
                 ->withErrors($validator)
                 ->withInput();
@@ -36,10 +42,14 @@ class SystemSettingsController extends Controller
         $errors = [];
 
         foreach ($request->settings as $key => $value) {
+            \Log::info("Processing setting: {$key}", ['value' => $value]);
+            
             $setting = SystemSetting::where('key', $key)->first();
             
             if (!$setting) {
-                $errors[] = "Setting '{$key}' not found";
+                $error = "Setting '{$key}' not found";
+                $errors[] = $error;
+                \Log::error($error);
                 continue;
             }
 
@@ -47,13 +57,25 @@ class SystemSettingsController extends Controller
             $validation = $this->validateSettingValue($setting, $value);
             if (!$validation['valid']) {
                 $errors[] = $validation['message'];
+                \Log::error("Validation failed for {$key}", ['message' => $validation['message']]);
                 continue;
             }
 
-            if (SystemSetting::set($key, $value)) {
+            $result = SystemSetting::set($key, $value);
+            \Log::info("Setting update result for {$key}", ['result' => $result]);
+            
+            if ($result) {
                 $updated++;
+            } else {
+                $errors[] = "Failed to update setting '{$key}'";
             }
         }
+
+        \Log::info('SystemSettings update completed', [
+            'updated_count' => $updated,
+            'errors_count' => count($errors),
+            'errors' => $errors
+        ]);
 
         if (!empty($errors)) {
             return redirect()->back()

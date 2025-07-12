@@ -22,7 +22,7 @@ class UpdateMenuRequest extends FormRequest
      */
     public function rules(): array
     {
-        $menuId = $this->route('id')->id ?? $this->route('id');
+        $menuId = $this->route('menu')->id ?? $this->route('menu');
         
         return [
             'name' => ['required', 'string', 'max:255', Rule::unique('menus', 'name')->ignore($menuId)],
