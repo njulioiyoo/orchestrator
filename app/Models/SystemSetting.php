@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use OwenIt\Auditing\Contracts\Auditable;
+use OwenIt\Auditing\Auditable as AuditableTrait;
 
-class SystemSetting extends Model
+class SystemSetting extends Model implements Auditable
 {
-    use HasFactory;
+    use HasFactory, AuditableTrait;
 
     protected $fillable = [
         'key',
@@ -25,6 +27,33 @@ class SystemSetting extends Model
         'options' => 'array',
         'is_public' => 'boolean'
     ];
+
+    /**
+     * Attributes to include in the Audit.
+     *
+     * @var array
+     */
+    protected $auditInclude = [
+        'key',
+        'name', 
+        'value',
+        'type',
+        'description',
+        'group',
+        'options',
+        'is_public',
+        'sort_order'
+    ];
+
+    /**
+     * Generating tags for each model audited.
+     *
+     * @return array
+     */
+    public function generateTags(): array
+    {
+        return ['system_settings'];
+    }
 
     public static function get($key, $default = null)
     {

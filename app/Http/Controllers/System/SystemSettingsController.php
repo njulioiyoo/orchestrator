@@ -7,6 +7,7 @@ use App\Models\SystemSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
+use OwenIt\Auditing\Models\Audit;
 
 class SystemSettingsController extends Controller
 {
@@ -40,6 +41,7 @@ class SystemSettingsController extends Controller
 
         $updated = 0;
         $errors = [];
+        $auditData = [];
 
         foreach ($request->settings as $key => $value) {
             \Log::info("Processing setting: {$key}", ['value' => $value]);
@@ -61,14 +63,31 @@ class SystemSettingsController extends Controller
                 continue;
             }
 
+            // Store old value for audit
+            $oldValue = $setting->value;
+            
             $result = SystemSetting::set($key, $value);
             \Log::info("Setting update result for {$key}", ['result' => $result]);
             
             if ($result) {
                 $updated++;
+                
+                // Store data for batch audit log
+                $auditData[] = [
+                    'setting_key' => $key,
+                    'setting_name' => $setting->name,
+                    'old_value' => $oldValue,
+                    'new_value' => $value,
+                    'setting_type' => $setting->type
+                ];
             } else {
                 $errors[] = "Failed to update setting '{$key}'";
             }
+        }
+
+        // Create manual audit log for batch update
+        if (!empty($auditData)) {
+            $this->createBatchUpdateAudit($auditData, $updated);
         }
 
         \Log::info('SystemSettings update completed', [
@@ -121,6 +140,77 @@ class SystemSettingsController extends Controller
                 
             default:
                 return ['valid' => true, 'message' => ''];
+        }
+    }
+
+    /**
+     * Create manual audit log for batch system settings update
+     *
+     * @param array $auditData
+     * @param int $updatedCount
+     */
+    private function createBatchUpdateAudit(array $auditData, int $updatedCount): void
+    {
+        try {
+            // Create a summary audit entry for the batch operation
+            Audit::create([
+                'user_type' => 'App\Models\User',
+                'user_id' => auth()->id(),
+                'event' => 'batch_updated',
+                'auditable_type' => 'App\Models\SystemSetting',
+                'auditable_id' => null, // null for batch operations
+                'old_values' => [],
+                'new_values' => [
+                    'batch_operation' => 'system_settings_update',
+                    'updated_count' => $updatedCount,
+                    'settings_modified' => collect($auditData)->pluck('setting_key')->toArray(),
+                    'timestamp' => now()->toISOString()
+                ],
+                'url' => request()->fullUrl(),
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+                'tags' => json_encode(['system_settings', 'batch_update']),
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+
+            // Create individual audit entries for each setting change
+            foreach ($auditData as $audit) {
+                $setting = SystemSetting::where('key', $audit['setting_key'])->first();
+                
+                if ($setting) {
+                    Audit::create([
+                        'user_type' => 'App\Models\User',
+                        'user_id' => auth()->id(),
+                        'event' => 'updated',
+                        'auditable_type' => 'App\Models\SystemSetting',
+                        'auditable_id' => $setting->id,
+                        'old_values' => [
+                            'value' => $audit['old_value']
+                        ],
+                        'new_values' => [
+                            'value' => $audit['new_value']
+                        ],
+                        'url' => request()->fullUrl(),
+                        'ip_address' => request()->ip(),
+                        'user_agent' => request()->userAgent(),
+                        'tags' => json_encode(['system_settings', $audit['setting_key']]),
+                        'created_at' => now(),
+                        'updated_at' => now()
+                    ]);
+                }
+            }
+
+            \Log::info('Batch audit log created successfully', [
+                'updated_count' => $updatedCount,
+                'audit_entries' => count($auditData) + 1 // +1 for summary entry
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Failed to create batch audit log', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
         }
     }
 }
