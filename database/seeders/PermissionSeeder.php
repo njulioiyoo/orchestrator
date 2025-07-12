@@ -60,8 +60,8 @@ class PermissionSeeder extends Seeder
         }
 
         // Create roles - only Admin and User
-        $admin = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
-        $user = Role::firstOrCreate(['name' => 'user', 'guard_name' => 'web']);
+        $admin = Role::firstOrCreate(['name' => 'Admin', 'guard_name' => 'web']);
+        $user = Role::firstOrCreate(['name' => 'User', 'guard_name' => 'web']);
 
         // Admin gets ALL permissions
         $adminPermissions = [

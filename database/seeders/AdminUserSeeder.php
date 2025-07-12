@@ -33,8 +33,8 @@ class AdminUserSeeder extends Seeder
         );
 
         // Assign roles
-        $adminRole = Role::where('name', 'admin')->first();
-        $userRole = Role::where('name', 'user')->first();
+        $adminRole = Role::where('name', 'Admin')->first();
+        $userRole = Role::where('name', 'User')->first();
 
         if ($adminRole) {
             $adminUser->assignRole($adminRole);

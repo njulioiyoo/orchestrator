@@ -36,7 +36,7 @@ class MenuSeeder extends Seeder
             'sort_order' => 2,
             'is_active' => true,
             'permissions' => [
-                ['type' => 'role', 'name' => 'admin']
+                ['type' => 'role', 'name' => 'Admin']
             ]
         ]);
 
