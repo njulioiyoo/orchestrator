@@ -8,6 +8,7 @@ use App\Http\Controllers\System\RoleController;
 use App\Http\Controllers\System\PermissionController;
 use App\Http\Controllers\System\AuditController;
 use App\Http\Controllers\System\MenuController;
+use App\Http\Controllers\System\SystemSettingsController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -78,6 +79,12 @@ Route::middleware('auth')->group(function () {
             Route::put('/{id}', [MenuController::class, 'update'])->name('system.menus.update');
             Route::delete('/{id}', [MenuController::class, 'destroy'])->name('system.menus.destroy');
             Route::post('/update-order', [MenuController::class, 'updateOrder'])->name('system.menus.updateOrder');
+        });
+
+        // System Settings (Admin only)
+        Route::prefix('settings')->middleware('role:Admin')->group(function () {
+            Route::get('/', [SystemSettingsController::class, 'index'])->name('system.settings.index');
+            Route::put('/', [SystemSettingsController::class, 'update'])->name('system.settings.update');
         });
     });
 
