@@ -709,12 +709,6 @@ const getGrowthBadgeClass = (rate) => {
     return 'badge-secondary'
 }
 
-const getGrowthClass = (rate) => {
-    if (rate > 0) return 'text-success'
-    if (rate < 0) return 'text-danger'
-    return 'text-muted'
-}
-
 onMounted(() => {
     fetchMetrics()
     
