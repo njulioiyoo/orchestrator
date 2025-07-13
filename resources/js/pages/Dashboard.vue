@@ -149,7 +149,7 @@
             <!-- Detailed Analytics Section -->
             <div class="row clearfix row-deck" v-if="metricsData">
                 <!-- System Health Details -->
-                <div class="col-lg-6 col-md-12 col-sm-12">
+                <div class="col-lg-4 col-md-6 col-sm-12">
                     <div class="card">
                         <div class="header">
                             <h2>System Health Monitor</h2>
@@ -189,7 +189,7 @@
                 </div>
 
                 <!-- User Analytics -->
-                <div class="col-lg-3 col-md-6 col-sm-12">
+                <div class="col-lg-4 col-md-6 col-sm-12">
                     <div class="card">
                         <div class="header">
                             <h2>User Analytics</h2>
@@ -246,7 +246,7 @@
                 </div>
 
                 <!-- System Configuration -->
-                <div class="col-lg-3 col-md-6 col-sm-12">
+                <div class="col-lg-4 col-md-6 col-sm-12">
                     <div class="card">
                         <div class="header">
                             <h2>System Configuration</h2>
@@ -299,7 +299,7 @@
 
             <!-- Database Analytics Section -->
             <div class="row clearfix row-deck" v-if="metricsData">
-                <div class="col-lg-6 col-md-12 col-sm-12">
+                <div class="col-lg-4 col-md-6 col-sm-12">
                     <div class="card">
                         <div class="header">
                             <h2>Database Overview</h2>
@@ -338,7 +338,7 @@
                     </div>
                 </div>
 
-                <div class="col-lg-6 col-md-12 col-sm-12">
+                <div class="col-lg-4 col-md-6 col-sm-12">
                     <div class="card">
                         <div class="header">
                             <h2>Recent Activities</h2>
@@ -369,6 +369,162 @@
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Performance Metrics Widget -->
+                <div class="col-lg-4 col-md-6 col-sm-12">
+                    <div class="card">
+                        <div class="header">
+                            <h2>Performance Metrics</h2>
+                        </div>
+                        <div class="body">
+                            <div class="d-flex justify-content-between mb-3" v-if="healthData">
+                                <div class="text-center">
+                                    <h5 class="mb-1" :class="getHealthTextColor(healthData.checks.database.status)">
+                                        {{ healthData.checks.database.response_time || 'N/A' }}
+                                    </h5>
+                                    <small class="text-muted">DB Response (ms)</small>
+                                </div>
+                                <div class="text-center">
+                                    <h5 class="mb-1" :class="getHealthTextColor(healthData.checks.memory.status)">
+                                        {{ healthData.checks.memory.usage_percent || 'N/A' }}%
+                                    </h5>
+                                    <small class="text-muted">Memory Usage</small>
+                                </div>
+                                <div class="text-center">
+                                    <h5 class="mb-1" :class="getHealthTextColor(healthData.checks.storage.status)">
+                                        {{ healthData.checks.storage.usage_percent || 'N/A' }}%
+                                    </h5>
+                                    <small class="text-muted">Storage Usage</small>
+                                </div>
+                            </div>
+                            <hr>
+                            <h6>User Engagement</h6>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>User Activation</span>
+                                    <span>{{ metricsData.user_metrics.activation_rate }}%</span>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar bg-success" 
+                                         :style="`width: ${metricsData.user_metrics.activation_rate}%`">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Active vs Total</span>
+                                    <span>{{ Math.round((metricsData.user_metrics.active_users / metricsData.user_metrics.total_users) * 100) }}%</span>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar bg-info" 
+                                         :style="`width: ${Math.round((metricsData.user_metrics.active_users / metricsData.user_metrics.total_users) * 100)}%`">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-center mt-3">
+                                <small class="text-muted">
+                                    Growth: <span :class="getGrowthClass(metricsData.user_metrics.growth_rate)" class="font-weight-bold">{{ metricsData.user_metrics.growth_rate }}%</span>
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions & Status -->
+            <div class="row clearfix row-deck" v-if="metricsData && healthData">
+                <div class="col-lg-8 col-md-8 col-sm-12">
+                    <div class="card">
+                        <div class="header">
+                            <h2>System Status Overview</h2>
+                        </div>
+                        <div class="body">
+                            <div class="row">
+                                <div class="col-lg-6 col-md-12">
+                                    <h6>Component Health</h6>
+                                    <div class="table-responsive">
+                                        <table class="table table-sm">
+                                            <tbody>
+                                                <tr v-for="(check, name) in healthData.checks" :key="name">
+                                                    <td>
+                                                        <i :class="getHealthIcon(name)" class="mr-2"></i>
+                                                        {{ capitalizeFirst(name) }}
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge badge-sm" :class="getHealthBadgeClass(check.status)">
+                                                            {{ capitalizeFirst(check.status) }}
+                                                        </span>
+                                                    </td>
+                                                    <td class="text-right">
+                                                        <small class="text-muted">
+                                                            <span v-if="check.response_time">{{ check.response_time }}ms</span>
+                                                            <span v-else-if="check.usage_percent">{{ check.usage_percent }}%</span>
+                                                            <span v-else>OK</span>
+                                                        </small>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6 col-md-12">
+                                    <h6>User Activity Summary</h6>
+                                    <div class="user-roles-breakdown">
+                                        <div v-for="(count, role) in metricsData.user_metrics.users_by_role" :key="role" 
+                                             class="d-flex justify-content-between align-items-center mb-2">
+                                            <span class="text-capitalize">{{ role }}</span>
+                                            <span class="badge badge-primary badge-pill">{{ count }}</span>
+                                        </div>
+                                    </div>
+                                    <hr>
+                                    <div class="text-center">
+                                        <h5 class="text-primary">{{ metricsData.user_metrics.recent_users }}</h5>
+                                        <small class="text-muted">New users this week</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-4 col-sm-12">
+                    <div class="card">
+                        <div class="header">
+                            <h2>Quick Actions</h2>
+                        </div>
+                        <div class="body">
+                            <div class="btn-group-vertical w-100" role="group">
+                                <button @click="refreshMetrics" class="btn btn-outline-primary mb-2" :disabled="loading">
+                                    <i class="fa fa-refresh mr-2" :class="{ 'fa-spin': loading }"></i>
+                                    Refresh Dashboard
+                                </button>
+                                <button class="btn btn-outline-success mb-2">
+                                    <i class="fa fa-users mr-2"></i>
+                                    Manage Users
+                                </button>
+                                <button class="btn btn-outline-info mb-2">
+                                    <i class="fa fa-cogs mr-2"></i>
+                                    System Settings
+                                </button>
+                                <button class="btn btn-outline-warning mb-2">
+                                    <i class="fa fa-shield-alt mr-2"></i>
+                                    Security Center
+                                </button>
+                                <button class="btn btn-outline-secondary">
+                                    <i class="fa fa-chart-bar mr-2"></i>
+                                    View Reports
+                                </button>
+                            </div>
+                            <hr>
+                            <div class="text-center">
+                                <small class="text-muted">
+                                    System uptime: <br>
+                                    <strong class="text-success">{{ metricsData.system_metrics.uptime || '99.9%' }}</strong>
+                                </small>
                             </div>
                         </div>
                     </div>
@@ -553,6 +709,12 @@ const getGrowthBadgeClass = (rate) => {
     return 'badge-secondary'
 }
 
+const getGrowthClass = (rate) => {
+    if (rate > 0) return 'text-success'
+    if (rate < 0) return 'text-danger'
+    return 'text-muted'
+}
+
 onMounted(() => {
     fetchMetrics()
     
@@ -732,5 +894,66 @@ onMounted(() => {
 
 .row-deck:last-child {
     margin-bottom: 0;
+}
+
+/* Additional enhancements */
+.user-roles-breakdown {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.btn-group-vertical .btn {
+    border-radius: 4px !important;
+    text-align: left;
+}
+
+.performance-metric {
+    padding: 10px;
+    border-radius: 8px;
+    background: #f8f9fa;
+    margin-bottom: 10px;
+}
+
+/* System status table */
+.table-sm {
+    font-size: 0.875rem;
+}
+
+.badge-sm {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.5rem;
+}
+
+/* Quick actions styling */
+.btn-outline-primary:hover,
+.btn-outline-success:hover,
+.btn-outline-info:hover,
+.btn-outline-warning:hover,
+.btn-outline-secondary:hover {
+    transform: translateY(-1px);
+    transition: all 0.2s ease;
+}
+
+/* Compact card padding */
+.card .body {
+    padding: 1rem;
+}
+
+.card .header {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+/* Performance metrics improvements */
+.performance-metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+}
+
+@media (max-width: 768px) {
+    .performance-metrics-grid {
+        grid-template-columns: 1fr;
+    }
 }
 </style>
