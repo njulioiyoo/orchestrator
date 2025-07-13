@@ -1,6 +1,5 @@
 <template>
-    <div id="main-content">
-        <div class="container-fluid">
+    <div class="container-fluid">
             <div class="block-header">
                 <div class="row">
                     <div class="col-lg-6 col-md-6 col-sm-12">
@@ -530,9 +529,7 @@
                     </div>
                 </div>
             </div>
-        </div>
     </div>
-
 </template>
 
 <script setup>
