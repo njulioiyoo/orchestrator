@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->web(append: [
             HandleInertiaRequests::class,
+            \App\Http\Middleware\ResolveTenant::class,
         ]);
         
         $middleware->alias([
@@ -22,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
             'refresh_csrf' => \App\Http\Middleware\RefreshCsrfToken::class,
+            'tenant' => \App\Http\Middleware\EnsureTenantAccess::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

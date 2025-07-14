@@ -9,6 +9,7 @@ use App\Http\Controllers\System\PermissionController;
 use App\Http\Controllers\System\AuditController;
 use App\Http\Controllers\System\MenuController;
 use App\Http\Controllers\System\SystemSettingsController;
+use App\Http\Controllers\TenantController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -85,6 +86,20 @@ Route::middleware('auth')->group(function () {
         Route::prefix('settings')->middleware('role:Admin')->group(function () {
             Route::get('/', [SystemSettingsController::class, 'index'])->name('system.settings.index');
             Route::put('/', [SystemSettingsController::class, 'update'])->name('system.settings.update');
+        });
+
+        // Tenant Management (Admin only)
+        Route::prefix('tenants')->middleware('role:Admin')->group(function () {
+            Route::get('/', [TenantController::class, 'index'])->name('system.tenants.index');
+            Route::get('/create', [TenantController::class, 'create'])->name('system.tenants.create');
+            Route::post('/', [TenantController::class, 'store'])->name('system.tenants.store');
+            Route::get('/{tenant}', [TenantController::class, 'show'])->name('system.tenants.show');
+            Route::get('/{tenant}/edit', [TenantController::class, 'edit'])->name('system.tenants.edit');
+            Route::put('/{tenant}', [TenantController::class, 'update'])->name('system.tenants.update');
+            Route::delete('/{tenant}', [TenantController::class, 'destroy'])->name('system.tenants.destroy');
+            Route::post('/{tenant}/switch', [TenantController::class, 'switch'])->name('system.tenants.switch');
+            Route::put('/{tenant}/config', [TenantController::class, 'config'])->name('system.tenants.config');
+            Route::get('/{tenant}/config/{key?}', [TenantController::class, 'getConfig'])->name('system.tenants.getConfig');
         });
     });
 

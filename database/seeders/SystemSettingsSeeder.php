@@ -13,6 +13,9 @@ class SystemSettingsSeeder extends Seeder
      */
     public function run(): void
     {
+        // Get default tenant ID
+        $defaultTenantId = config('seeding.default_tenant_id', 1);
+
         $settings = [
             // General Settings
             [
@@ -183,7 +186,7 @@ class SystemSettingsSeeder extends Seeder
         foreach ($settings as $setting) {
             SystemSetting::firstOrCreate(
                 ['key' => $setting['key']],
-                $setting
+                array_merge($setting, ['tenant_id' => $defaultTenantId])
             );
         }
 

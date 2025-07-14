@@ -10,6 +10,9 @@ class AdminUserSeeder extends Seeder
 {
     public function run()
     {
+        // Get default tenant ID
+        $defaultTenantId = config('seeding.default_tenant_id', 1);
+
         // Create admin user
         $adminUser = User::firstOrCreate(
             ['email' => 'admin@orchestrator.local'],
@@ -18,6 +21,7 @@ class AdminUserSeeder extends Seeder
                 'email' => 'admin@orchestrator.local',
                 'password' => bcrypt('password'),
                 'email_verified_at' => now(),
+                'tenant_id' => $defaultTenantId,
             ]
         );
 
@@ -29,6 +33,7 @@ class AdminUserSeeder extends Seeder
                 'email' => 'user@orchestrator.local', 
                 'password' => bcrypt('password'),
                 'email_verified_at' => now(),
+                'tenant_id' => $defaultTenantId,
             ]
         );
 

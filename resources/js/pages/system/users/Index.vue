@@ -11,10 +11,8 @@
         <div class="row clearfix">
             <div class="col-md-12">
                 <div class="card">
-                    <PageHeaderWithCreateButton 
-                        title="Users" 
-                        :buttonLink="canCreateUsers ? '/system/users/create' : null"
-                        v-permission="'create users'" />
+                    <PageHeaderWithCreateButton title="Users"
+                        :buttonLink="canCreateUsers ? '/system/users/create' : null" v-permission="'create users'" />
 
                     <ReusableDataTable ref="usersDataTable" :data-url="dataUrl" :columns="tableColumns"
                         :delete-url="deleteUrl" :auto-refresh="true" :refresh-interval="30000"

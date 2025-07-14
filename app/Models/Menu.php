@@ -8,10 +8,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use OwenIt\Auditing\Contracts\Auditable;
 use OwenIt\Auditing\Auditable as AuditableTrait;
 use App\Traits\EncryptedRouteKey;
+use App\Models\Traits\HasTenant;
 
 class Menu extends Model implements Auditable
 {
-    use EncryptedRouteKey, AuditableTrait;
+    use EncryptedRouteKey, HasTenant, AuditableTrait;
     
     protected $fillable = [
         'name',
@@ -22,7 +23,8 @@ class Menu extends Model implements Auditable
         'parent_id',
         'sort_order',
         'is_active',
-        'permissions'
+        'permissions',
+        'tenant_id'
     ];
 
     protected $casts = [

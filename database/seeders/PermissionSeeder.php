@@ -13,6 +13,9 @@ class PermissionSeeder extends Seeder
         // Reset cached roles and permissions
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
+        // Get default tenant ID
+        $defaultTenantId = config('seeding.default_tenant_id', 1);
+
         // Create permissions based on application modules
         $permissions = [
             // Dashboard Module
@@ -50,18 +53,40 @@ class PermissionSeeder extends Seeder
             // System Settings Module
             ['name' => 'view system settings', 'group' => 'System Settings'],
             ['name' => 'edit system settings', 'group' => 'System Settings'],
+            
+            // Tenant Management Module
+            ['name' => 'view tenants', 'group' => 'Tenant Management'],
+            ['name' => 'create tenants', 'group' => 'Tenant Management'],
+            ['name' => 'edit tenants', 'group' => 'Tenant Management'],
+            ['name' => 'delete tenants', 'group' => 'Tenant Management'],
+            ['name' => 'switch tenants', 'group' => 'Tenant Management'],
         ];
 
         foreach ($permissions as $permission) {
             Permission::firstOrCreate([
                 'name' => $permission['name'],
                 'guard_name' => 'web'
-            ], $permission);
+            ], array_merge($permission, ['tenant_id' => $defaultTenantId]));
         }
 
         // Create roles - only Admin and User
-        $admin = Role::firstOrCreate(['name' => 'Admin', 'guard_name' => 'web']);
-        $user = Role::firstOrCreate(['name' => 'User', 'guard_name' => 'web']);
+        $admin = Role::firstOrCreate([
+            'name' => 'Admin', 
+            'guard_name' => 'web'
+        ], [
+            'name' => 'Admin',
+            'guard_name' => 'web',
+            'tenant_id' => $defaultTenantId
+        ]);
+        
+        $user = Role::firstOrCreate([
+            'name' => 'User', 
+            'guard_name' => 'web'
+        ], [
+            'name' => 'User',
+            'guard_name' => 'web',
+            'tenant_id' => $defaultTenantId
+        ]);
 
         // Admin gets ALL permissions
         $adminPermissions = [
@@ -71,7 +96,8 @@ class PermissionSeeder extends Seeder
             'view permissions', 'create permissions', 'edit permissions', 'delete permissions',
             'view menus', 'create menus', 'edit menus', 'delete menus', 'update menu order',
             'view audits', 'view audit details',
-            'view system settings', 'edit system settings'
+            'view system settings', 'edit system settings',
+            'view tenants', 'create tenants', 'edit tenants', 'delete tenants', 'switch tenants'
         ];
         
         // User gets limited permissions

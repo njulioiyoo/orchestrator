@@ -10,6 +10,9 @@ class MenuSeeder extends Seeder
 {
     public function run(): void
     {
+        // Get default tenant ID
+        $defaultTenantId = config('seeding.default_tenant_id', 1);
+
         // Dashboard Menu (accessible by all authenticated users)
         Menu::create([
             'name' => 'dashboard',
@@ -20,6 +23,7 @@ class MenuSeeder extends Seeder
             'parent_id' => null,
             'sort_order' => 1,
             'is_active' => true,
+            'tenant_id' => $defaultTenantId,
             'permissions' => [
                 ['type' => 'permission', 'name' => 'view dashboard']
             ]
@@ -35,6 +39,7 @@ class MenuSeeder extends Seeder
             'parent_id' => null,
             'sort_order' => 2,
             'is_active' => true,
+            'tenant_id' => $defaultTenantId,
             'permissions' => [
                 ['type' => 'role', 'name' => 'Admin']
             ]
@@ -50,6 +55,7 @@ class MenuSeeder extends Seeder
             'parent_id' => $systemMenu->id,
             'sort_order' => 1,
             'is_active' => true,
+            'tenant_id' => $defaultTenantId,
             'permissions' => [
                 ['type' => 'permission', 'name' => 'view users']
             ]
@@ -65,6 +71,7 @@ class MenuSeeder extends Seeder
             'parent_id' => $systemMenu->id,
             'sort_order' => 2,
             'is_active' => true,
+            'tenant_id' => $defaultTenantId,
             'permissions' => [
                 ['type' => 'permission', 'name' => 'view roles']
             ]
@@ -80,6 +87,7 @@ class MenuSeeder extends Seeder
             'parent_id' => $systemMenu->id,
             'sort_order' => 3,
             'is_active' => true,
+            'tenant_id' => $defaultTenantId,
             'permissions' => [
                 ['type' => 'permission', 'name' => 'view permissions']
             ]
@@ -95,6 +103,7 @@ class MenuSeeder extends Seeder
             'parent_id' => $systemMenu->id,
             'sort_order' => 4,
             'is_active' => true,
+            'tenant_id' => $defaultTenantId,
             'permissions' => [
                 ['type' => 'permission', 'name' => 'view menus']
             ]
@@ -110,6 +119,7 @@ class MenuSeeder extends Seeder
             'parent_id' => $systemMenu->id,
             'sort_order' => 5,
             'is_active' => true,
+            'tenant_id' => $defaultTenantId,
             'permissions' => [
                 ['type' => 'permission', 'name' => 'view audits']
             ]
@@ -125,8 +135,25 @@ class MenuSeeder extends Seeder
             'parent_id' => $systemMenu->id,
             'sort_order' => 6,
             'is_active' => true,
+            'tenant_id' => $defaultTenantId,
             'permissions' => [
                 ['type' => 'permission', 'name' => 'view system settings']
+            ]
+        ]);
+
+        // Tenant Management (child of System)
+        Menu::create([
+            'name' => 'tenants',
+            'label' => 'Tenants',
+            'icon' => 'fa fa-building',
+            'url' => '/system/tenants',
+            'route' => 'system.tenants.index',
+            'parent_id' => $systemMenu->id,
+            'sort_order' => 7,
+            'is_active' => true,
+            'tenant_id' => $defaultTenantId,
+            'permissions' => [
+                ['type' => 'permission', 'name' => 'view tenants']
             ]
         ]);
 
