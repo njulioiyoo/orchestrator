@@ -244,11 +244,8 @@ const isMenuOrChildrenActive = (menu) => {
     // Force reactivity
     forceUpdate.value
     
-    console.log(`🔍 Checking ${menu.label} | Expanded: ${expandedMenuLabel.value} | Current URL: ${currentRoute.value}`)
-    
     // PRIORITY 1: If a menu is expanded/clicked, it should be active
     if (expandedMenuLabel.value && menu.label === expandedMenuLabel.value) {
-        console.log(`✅ ${menu.label} is active (expanded)`)
         return true
     }
     
@@ -256,13 +253,12 @@ const isMenuOrChildrenActive = (menu) => {
     if (!expandedMenuLabel.value) {
         // Direct match - if this menu's URL matches current route
         if (menu.url && isCurrentRoute(menu.url)) {
-            console.log(`✅ ${menu.label} is active (URL match)`)
             return true
         }
 
         // For parent menus - only active if one of their children is active
         if (menu.children && menu.children.length > 0) {
-            const hasActiveChild = menu.children.some(child => {
+            return menu.children.some(child => {
                 // Check if child URL matches current route
                 if (child.url && isCurrentRoute(child.url)) {
                     return true
@@ -276,15 +272,9 @@ const isMenuOrChildrenActive = (menu) => {
                 }
                 return false
             })
-            
-            if (hasActiveChild) {
-                console.log(`✅ ${menu.label} is active (has active child)`)
-                return true
-            }
         }
     }
 
-    console.log(`❌ ${menu.label} is not active`)
     return false
 }
 
@@ -295,29 +285,22 @@ const updateExpandedState = () => {
     // MetisMenu sets aria-expanded="true" on the <ul> element, not the <li>
     // So we need to find the parent <li> that contains a <ul> with aria-expanded="true"
     const expandedUl = document.querySelector('#main-menu ul[aria-expanded="true"]')
-    console.log('🔍 Checking expanded UL:', expandedUl)
     
     if (expandedUl) {
         // Find the parent <li> that contains this expanded <ul>
         const parentLi = expandedUl.closest('li')
-        console.log('🔍 Parent LI:', parentLi)
         
         if (parentLi) {
             // Find the span inside the parent li's direct anchor
             const span = parentLi.querySelector(':scope > a > span')
             const menuLabel = span ? span.textContent.trim() : null
-            console.log('✅ Found expanded menu:', menuLabel)
             expandedMenuLabel.value = menuLabel
         } else {
-            console.log('❌ No parent LI found')
             expandedMenuLabel.value = null
         }
     } else {
-        console.log('❌ No expanded UL found')
         expandedMenuLabel.value = null
     }
-    
-    console.log('📍 Current expanded label:', expandedMenuLabel.value)
     
     // Trigger reactivity
     forceUpdate.value++
@@ -326,19 +309,13 @@ const updateExpandedState = () => {
 // Setup DOM observer for MetisMenu changes
 const setupMenuObserver = () => {
     const targetNode = document.getElementById('main-menu')
-    if (!targetNode) {
-        console.log('❌ Target node #main-menu not found')
-        return
-    }
-
-    console.log('🎯 Setting up observer for:', targetNode)
+    if (!targetNode) return
 
     const observer = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {
             if (mutation.type === 'attributes' && 
                 (mutation.attributeName === 'aria-expanded' || 
                  mutation.attributeName === 'class')) {
-                console.log('🔄 Mutation detected:', mutation.attributeName, 'on', mutation.target)
                 setTimeout(updateExpandedState, 50)
             }
         })
@@ -350,7 +327,6 @@ const setupMenuObserver = () => {
         subtree: true
     })
 
-    console.log('✅ Observer setup complete')
     return observer
 }
 
