@@ -87,26 +87,35 @@ class TenantContext
      */
     public function resolveFromRequest($request): ?Tenant
     {
-        // Try to resolve from domain
-        $host = $request->getHost();
-        
-        // Check for custom domain
-        $tenant = Tenant::active()->byDomain($host)->first();
-        
-        if (!$tenant) {
-            // Check for subdomain
-            $subdomain = $this->extractSubdomain($host);
-            if ($subdomain) {
-                $tenant = Tenant::active()->bySubdomain($subdomain)->first();
+        try {
+            // Try to resolve from domain
+            $host = $request->getHost();
+            
+            // Check for custom domain
+            $tenant = Tenant::active()->byDomain($host)->first();
+            
+            if (!$tenant) {
+                // Check for subdomain
+                $subdomain = $this->extractSubdomain($host);
+                if ($subdomain) {
+                    $tenant = Tenant::active()->bySubdomain($subdomain)->first();
+                }
             }
-        }
 
-        // Fallback to session if no domain resolution
-        if (!$tenant && session('current_tenant_id')) {
-            $tenant = Tenant::active()->find(session('current_tenant_id'));
-        }
+            // Fallback to session if no domain resolution
+            if (!$tenant && session('current_tenant_id')) {
+                $tenant = Tenant::active()->find(session('current_tenant_id'));
+            }
 
-        return $tenant;
+            return $tenant;
+        } catch (\Exception $e) {
+            // If database connection fails or tenants table doesn't exist, return null
+            if (str_contains($e->getMessage(), 'relation "tenants" does not exist') || 
+                str_contains($e->getMessage(), 'could not translate host name')) {
+                return null;
+            }
+            throw $e;
+        }
     }
 
     /**
@@ -114,15 +123,24 @@ class TenantContext
      */
     public function resolveFromSession(): ?Tenant
     {
-        $tenantId = session('current_tenant_id');
-        
-        if (!$tenantId) {
-            return null;
-        }
+        try {
+            $tenantId = session('current_tenant_id');
+            
+            if (!$tenantId) {
+                return null;
+            }
 
-        return Cache::remember("tenant.{$tenantId}", 300, function () use ($tenantId) {
-            return Tenant::active()->find($tenantId);
-        });
+            return Cache::remember("tenant.{$tenantId}", 300, function () use ($tenantId) {
+                return Tenant::active()->find($tenantId);
+            });
+        } catch (\Exception $e) {
+            // If database connection fails or tenants table doesn't exist, return null
+            if (str_contains($e->getMessage(), 'relation "tenants" does not exist') || 
+                str_contains($e->getMessage(), 'could not translate host name')) {
+                return null;
+            }
+            throw $e;
+        }
     }
 
     /**
