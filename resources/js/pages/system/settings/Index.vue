@@ -240,9 +240,7 @@ defineOptions({
 
 // Debug props on mount
 onMounted(() => {
-    console.log('Settings component mounted')
-    console.log('Props received:', props)
-    console.log('settingsGrouped:', props.settingsGrouped)
+    // Component mounted
 })
 
 const props = defineProps({
@@ -267,7 +265,6 @@ const initializeFormData = () => {
     
     // Check if settingsGrouped exists and has data
     if (!props.settingsGrouped || typeof props.settingsGrouped !== 'object') {
-        console.warn('settingsGrouped prop is not available or not an object')
         return formData
     }
     
@@ -290,7 +287,7 @@ const initializeFormData = () => {
             }
         })
     } catch (error) {
-        console.error('Error initializing form data:', error)
+        // Error initializing form data
     }
     
     return formData
@@ -301,40 +298,28 @@ const form = useForm({
 })
 
 const updateSettings = () => {
-    console.log('Submitting settings:', form.settings)
-    
     if (!form.settings || Object.keys(form.settings).length === 0) {
-        console.error('No settings data to submit')
         toast.warning('Tidak ada data pengaturan untuk disimpan. Silakan muat ulang halaman.')
         return
     }
     
     form.put('/system/settings', {
         onBefore: () => {
-            console.log('Form submission started')
             // Show loading toast
             toast.loading('Menyimpan pengaturan...')
         },
         onSuccess: (response) => {
-            console.log('Settings updated successfully', response)
             // Show success toast notification
             toast.clear() // Clear loading toast
             toast.success('Pengaturan sistem berhasil diperbarui!')
         },
         onError: (errors) => {
-            console.error('Error updating settings:', errors)
             // Show error toast notification
             toast.clear() // Clear loading toast
             toast.error('Gagal memperbarui pengaturan. Silakan periksa form dan coba lagi.')
-            
-            // Log specific error details for debugging
-            if (errors.response) {
-                console.error('Response status:', errors.response.status)
-                console.error('Response data:', errors.response.data)
-            }
         },
         onFinish: () => {
-            console.log('Form submission finished')
+            // Form submission finished
         }
     })
 }

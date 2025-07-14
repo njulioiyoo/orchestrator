@@ -10,7 +10,6 @@ export const useUserStore = defineStore('user', () => {
     // Actions
     const triggerUserTableRefresh = () => {
         userTableRefreshTrigger.value++
-        console.log('User table refresh triggered:', userTableRefreshTrigger.value)
     }
 
     const setUserAction = (action, data = null) => {
@@ -19,7 +18,6 @@ export const useUserStore = defineStore('user', () => {
             data: data,
             timestamp: Date.now()
         }
-        console.log('User action set:', lastUserAction.value)
     }
 
     const setProcessing = (processing) => {

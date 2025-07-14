@@ -12,8 +12,6 @@ export function useToast() {
     const success = (message, title = 'Sukses') => {
         if (typeof toastr !== 'undefined') {
             toastr.success(message, title)
-        } else {
-            console.log(`SUCCESS: ${title} - ${message}`)
         }
     }
 
@@ -77,8 +75,6 @@ export function useToast() {
                 tapToDismiss: false,
                 closeButton: false
             })
-        } else {
-            console.log(`LOADING: ${message}`)
         }
     }
 

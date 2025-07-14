@@ -159,11 +159,9 @@ const breadcrumbItems = [
 
 // Initialize sorted menus
 onMounted(() => {
-    console.log('Menu Index mounted, props.menus:', props.menus)
     sortedMenus.value = [...props.menus]
     // Also update the store with fresh data from props
     if (props.menus && props.menus.length >= 0) {
-        console.log('Setting menus in store from props:', props.menus)
         menuStore.setMenus(props.menus)
     }
 })
@@ -187,7 +185,6 @@ const deleteMenu = (menu) => {
             onError: (errors) => {
                 toast.clear()
                 toast.error('Gagal menghapus menu. Silakan coba lagi.')
-                console.error('Menu deletion failed:', errors)
             }
         })
     }

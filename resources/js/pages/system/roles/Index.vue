@@ -82,14 +82,14 @@ const tableColumns = [
 ]
 
 const onDataLoaded = (data) => {
-    console.log('Roles data loaded:', data.length, 'records')
+    // Roles data loaded
 }
 
 const onDeleteSuccess = ({ id, response }) => {
-    console.log('Role deleted successfully:', id)
+    // Role deleted successfully
 }
 
 const onError = (error) => {
-    console.error('DataTable error:', error)
+    // DataTable error
 }
 </script>

@@ -122,7 +122,6 @@ const buildDataTableColumns = () => {
 // Fungsi untuk inisialisasi DataTable
 const initDataTables = () => {
     if (!window.jQuery || !window.jQuery.fn.DataTable) {
-        console.warn('jQuery atau DataTable plugin belum tersedia.')
         return false
     }
 
@@ -132,7 +131,7 @@ const initDataTables = () => {
             try {
                 dataTableInstance.value.destroy()
             } catch (e) {
-                console.error('Error destroying existing DataTable:', e)
+                // Error destroying existing DataTable
             }
             dataTableInstance.value = null
         }
@@ -150,7 +149,6 @@ const initDataTables = () => {
                     return d
                 },
                 error: function (xhr, error, thrown) {
-                    console.error('DataTables AJAX error:', error, thrown)
                     emit('error', { xhr, error, thrown })
                 }
             },
@@ -160,7 +158,7 @@ const initDataTables = () => {
                 emit('dataLoaded', this.api().data().toArray())
             },
             initComplete: function () {
-                console.log('DataTable initialization complete')
+                // DataTable initialization complete
             }
         }
 
@@ -169,10 +167,8 @@ const initDataTables = () => {
 
         dataTableInstance.value = $table.DataTable(config)
 
-        console.log('DataTable berhasil diinisialisasi')
         return true
     } catch (error) {
-        console.error('Error saat inisialisasi DataTable:', error)
         emit('error', error)
         return false
     }
@@ -182,14 +178,11 @@ const initDataTables = () => {
 const reloadDataTable = () => {
     try {
         if (dataTableInstance.value) {
-            console.log('Reloading DataTable data')
             dataTableInstance.value.ajax.reload(null, false)
         } else {
-            console.warn('DataTable instance tidak tersedia, mencoba inisialisasi')
             setupDataTable()
         }
     } catch (error) {
-        console.error('Error reloading DataTable:', error)
         setTimeout(() => setupDataTable(), 1000)
     }
 }
@@ -200,7 +193,6 @@ const bindDeleteHandler = () => {
 
     try {
         if (!window.jQuery) {
-            console.warn('jQuery tidak tersedia saat binding delete handler')
             return
         }
 
@@ -233,7 +225,6 @@ const bindDeleteHandler = () => {
                             emit('deleteSuccess', { id, response: response.data })
                         })
                         .catch(error => {
-                            console.error('Delete error:', error)
                             Swal.fire(
                                 'Error!',
                                 error.response?.data?.message || 'Failed to delete the item.',
@@ -245,21 +236,18 @@ const bindDeleteHandler = () => {
             })
         })
 
-        console.log('Delete handlers bound successfully')
     } catch (error) {
-        console.error('Error binding delete handlers:', error)
+        // Error binding delete handlers
     }
 }
 
 // Fungsi untuk setup DataTable
 const setupDataTable = async () => {
     if (isSetupInProgress) {
-        console.log('Setup DataTable sedang berlangsung')
         return
     }
 
     if (isSetupComplete && dataTableInstance.value) {
-        console.log('DataTable sudah ada, melakukan reload data')
         reloadDataTable()
         return
     }
@@ -271,13 +259,11 @@ const setupDataTable = async () => {
 
     const checkDependencies = () => {
         if (typeof window.jQuery === 'undefined') {
-            console.log('jQuery belum tersedia, memuat jQuery...')
             loadJQuery()
             return false
         }
 
         if (typeof window.jQuery.fn.DataTable === 'undefined') {
-            console.log('DataTables belum tersedia, memuat DataTables...')
             loadDataTablesScript()
             return false
         }
@@ -289,11 +275,9 @@ const setupDataTable = async () => {
         const jQueryScript = document.createElement('script')
         jQueryScript.src = 'https://code.jquery.com/jquery-3.6.0.min.js'
         jQueryScript.onload = () => {
-            console.log('jQuery berhasil dimuat')
             loadDataTablesScript()
         }
         jQueryScript.onerror = () => {
-            console.error('Gagal memuat jQuery!')
             handleSetupError()
         }
         document.head.appendChild(jQueryScript)
@@ -303,8 +287,6 @@ const setupDataTable = async () => {
         const dataTableScript = document.createElement('script')
         dataTableScript.src = 'https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js'
         dataTableScript.onload = () => {
-            console.log('DataTables berhasil dimuat!')
-
             // Load CSS
             if (!document.querySelector('link[href*="datatables"]')) {
                 const dataTablesCss = document.createElement('link')
@@ -319,7 +301,6 @@ const setupDataTable = async () => {
             }, 500)
         }
         dataTableScript.onerror = () => {
-            console.error('Gagal memuat DataTables!')
             handleSetupError()
         }
         document.head.appendChild(dataTableScript)
@@ -331,7 +312,6 @@ const setupDataTable = async () => {
             setupAttempts++
             setTimeout(setupDataTable, 1000)
         } else {
-            console.error(`Berhenti mencoba setelah ${maxSetupAttempts} percobaan`)
             emit('error', new Error('Failed to load DataTable dependencies'))
         }
     }
@@ -340,7 +320,6 @@ const setupDataTable = async () => {
         const initResult = initDataTables()
 
         if (initResult) {
-            console.log('DataTable berhasil diinisialisasi')
             isSetupComplete = true
             isSetupInProgress = false
 
@@ -362,7 +341,6 @@ const setupAutoRefresh = () => {
 
     pollingInterval = setInterval(() => {
         if (dataTableInstance.value && document.visibilityState === 'visible') {
-            console.log('Auto-refresh datatable')
             reloadDataTable()
         }
     }, props.refreshInterval)
@@ -390,7 +368,6 @@ defineExpose({
 
 // Lifecycle hooks
 onMounted(() => {
-    console.log('ReusableDataTable mounted')
     isSetupInProgress = false
     isSetupComplete = false
     setupAttempts = 0
@@ -401,8 +378,6 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
-    console.log('ReusableDataTable unmounting')
-
     // Clear interval
     if (pollingInterval) {
         clearInterval(pollingInterval)
@@ -413,7 +388,7 @@ onBeforeUnmount(() => {
         try {
             dataTableInstance.value.destroy()
         } catch (e) {
-            console.error('Error destroying DataTable:', e)
+            // Error destroying DataTable
         }
         dataTableInstance.value = null
     }
@@ -424,7 +399,7 @@ onBeforeUnmount(() => {
             window.jQuery(document).off('click', `#${props.tableId} .js-delete`)
         }
     } catch (e) {
-        console.error('Error cleaning up jQuery handlers:', e)
+        // Error cleaning up jQuery handlers
     }
 })
 </script>

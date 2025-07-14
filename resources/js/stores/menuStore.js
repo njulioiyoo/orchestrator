@@ -68,7 +68,6 @@ export const useMenuStore = defineStore('menu', {
             this.menus = testMenus
             this.isLoaded = true
             this.hasError = false
-            console.log('🧪 Test menus set:', this.menus)
         },
 
         clearMenus() {

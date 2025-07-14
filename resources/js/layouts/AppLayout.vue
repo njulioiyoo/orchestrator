@@ -184,7 +184,6 @@ onMounted(() => {
                     const message = toast.querySelector('.toast-message');
                     if (message && message.textContent.includes('Hello, welcome to Iconic')) {
                         toast.remove();
-                        console.log('Removed persistent welcome toast');
                     }
                 });
             });

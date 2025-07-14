@@ -291,8 +291,6 @@ const tableColumns = [
 
 // Event handlers
 const onDataLoaded = (data) => {
-    console.log('Audit data loaded:', data.length, 'records')
-    
     // Bind view button events after data loaded
     setTimeout(() => {
         $('.js-view').off('click').on('click', function() {
@@ -303,12 +301,10 @@ const onDataLoaded = (data) => {
 }
 
 const onError = (error) => {
-    console.error('Audit DataTable error:', error)
+    // Audit DataTable error
 }
 
 onMounted(() => {
-    console.log('Audit Logs page mounted')
-    
     // Setup modal event listeners  
     setTimeout(() => {
         if (window.$ && window.$.fn.modal) {
@@ -328,7 +324,6 @@ async function viewAuditDetails(auditId) {
         // Use jQuery modal instead of Bootstrap 5
         $('#auditDetailModal').modal('show')
     } catch (error) {
-        console.error('Error fetching audit details:', error)
         alert('Failed to load audit details')
     }
 }

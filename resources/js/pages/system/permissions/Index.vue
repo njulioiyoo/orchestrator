@@ -97,15 +97,15 @@ const tableColumns = [
 
 // Event handlers
 const onDataLoaded = (data) => {
-    console.log('Data loaded:', data.length, 'records')
+    // Data loaded
 }
 
 const onDeleteSuccess = ({ id, response }) => {
-    console.log('Permission deleted successfully:', id)
+    // Permission deleted successfully
 }
 
 const onError = (error) => {
-    console.error('DataTable error:', error)
+    // DataTable error
 }
 
 // Function to reload data
@@ -121,7 +121,6 @@ const checkAndHandleNewPermissionCreated = () => {
         const newPermissionCreated = localStorage.getItem('newPermissionCreated')
 
         if (newPermissionCreated === 'true') {
-            console.log('New permission created flag detected, reloading table')
             localStorage.removeItem('newPermissionCreated')
             localStorage.removeItem('newPermissionTimestamp')
 
@@ -130,17 +129,14 @@ const checkAndHandleNewPermissionCreated = () => {
             }, 500)
         }
     } catch (error) {
-        console.error('Error checking localStorage:', error)
+        // Error checking localStorage
     }
 }
 
 // Lifecycle hooks
 onMounted(() => {
-    console.log('Permissions page mounted')
-
     // Check for flash messages
     if (page.props.flash && page.props.flash.success) {
-        console.log('Flash message detected:', page.props.flash.success)
         setTimeout(() => {
             reloadTable()
         }, 1000)

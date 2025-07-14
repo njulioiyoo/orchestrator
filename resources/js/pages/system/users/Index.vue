@@ -100,24 +100,22 @@ const tableColumns = [
 // Function to reload DataTable
 const reloadTable = () => {
     if (usersDataTable.value) {
-        console.log('Reloading DataTable...')
         usersDataTable.value.reloadDataTable()
     }
 }
 
 // Simple event handlers for DataTable
 const onDataLoaded = (data) => {
-    console.log('Data loaded:', data.length, 'records')
+    // Data loaded
 }
 
 const onDeleteSuccess = ({ id, response }) => {
-    console.log('User deleted successfully:', id)
     // Trigger user deleted in store
     userStore.userDeleted(id)
 }
 
 const onError = (error) => {
-    console.error('DataTable error:', error)
+    // DataTable error
 }
 
 // Watch for store changes to refresh DataTable
@@ -125,7 +123,6 @@ watch(
     () => userStore.userTableRefreshTrigger,
     (newValue, oldValue) => {
         if (newValue !== oldValue && newValue > 0) {
-            console.log('Store refresh trigger detected, reloading table')
             setTimeout(() => {
                 reloadTable()
             }, 100) // Small delay to ensure any navigation is complete
@@ -135,12 +132,9 @@ watch(
 
 // Lifecycle
 onMounted(() => {
-    console.log('Users Index mounted')
-    
     // Check if there's a recent action when component mounts
     const lastAction = userStore.getLastAction()
     if (lastAction && lastAction.timestamp > Date.now() - 5000) { // Within last 5 seconds
-        console.log('Recent user action detected on mount:', lastAction)
         setTimeout(() => {
             reloadTable()
         }, 500)
