@@ -11,11 +11,12 @@ use App\Traits\EncryptedRouteKey;
 use App\Models\Traits\HasTenant;
 use OwenIt\Auditing\Contracts\Auditable;
 use OwenIt\Auditing\Auditable as AuditableTrait;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable implements Auditable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasRoles, EncryptedRouteKey, HasTenant, AuditableTrait;
+    use HasFactory, Notifiable, HasRoles, EncryptedRouteKey, HasTenant, AuditableTrait, HasApiTokens;
 
     /**
      * The attributes that are mass assignable.
@@ -27,6 +28,11 @@ class User extends Authenticatable implements Auditable
         'email',
         'password',
         'tenant_id',
+        'is_active',
+        'profile',
+        'user_permissions',
+        'settings',
+        'last_login_at',
     ];
 
     protected $auditExclude = [
@@ -54,6 +60,11 @@ class User extends Authenticatable implements Auditable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean',
+            'profile' => 'array',
+            'user_permissions' => 'array',
+            'settings' => 'array',
+            'last_login_at' => 'datetime',
         ];
     }
 
@@ -65,5 +76,10 @@ class User extends Authenticatable implements Auditable
     public function getRoleNamesAttribute()
     {
         return $this->getRoleNames()->toArray();
+    }
+
+    public function tenant()
+    {
+        return $this->belongsTo(Tenant::class);
     }
 }

@@ -11,7 +11,7 @@
         <div v-if="showLoader" class="page-loader-wrapper">
             <div class="loader">
                 <div class="m-t-30">
-                    <i class="fa fa-spinner fa-spin fa-3x text-primary"></i>
+                    <img src="/assets/images/logo.svg" width="60" height="60" alt="Logo" />
                 </div>
                 <p>Loading...</p>
             </div>

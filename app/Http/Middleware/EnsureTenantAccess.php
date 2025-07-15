@@ -30,6 +30,18 @@ class EnsureTenantAccess
             return $next($request);
         }
 
+        // Check if user is super admin
+        $isSuperAdmin = $user && (
+            $user->hasPermissionTo('super_admin') ||
+            $user->hasRole('super-admin') ||
+            ($user->settings['can_access_all_tenants'] ?? false)
+        );
+
+        // Super admin can access all tenants
+        if ($isSuperAdmin) {
+            return $next($request);
+        }
+
         // Check if user has access to current tenant
         if (!$this->tenantContext->userHasAccess($user)) {
             abort(403, 'You do not have access to this tenant.');

@@ -33,6 +33,22 @@ class TenantContext
     }
 
     /**
+     * Get the current tenant (alias for getTenant)
+     */
+    public function getCurrentTenant(): ?Tenant
+    {
+        return $this->getTenant();
+    }
+
+    /**
+     * Set the current tenant (alias for setTenant)
+     */
+    public function setCurrentTenant(?Tenant $tenant): void
+    {
+        $this->setTenant($tenant);
+    }
+
+    /**
      * Get the current tenant ID
      */
     public function getId(): ?int

@@ -32,7 +32,7 @@ Route::middleware('auth')->group(function () {
 
     Route::prefix('system')->group(function () {
         // User Management (Admin only)
-        Route::prefix('users')->middleware('role:Admin')->group(function () {
+        Route::prefix('users')->middleware('role:super-admin')->group(function () {
             Route::get('/', [UserController::class, 'index'])->name('system.users.index');
             Route::get('/data', [UserController::class, 'data'])->name('system.users.data');
             Route::get('/create', [UserController::class, 'create'])->name('system.users.create');
@@ -43,7 +43,7 @@ Route::middleware('auth')->group(function () {
         });
 
         // Role Management (Admin only)
-        Route::prefix('roles')->middleware('role:Admin')->group(function () {
+        Route::prefix('roles')->middleware('role:super-admin')->group(function () {
             Route::get('/', [RoleController::class, 'index'])->name('system.roles.index');
             Route::get('/data', [RoleController::class, 'data'])->name('system.roles.data');
             Route::get('/create', [RoleController::class, 'create'])->name('system.roles.create');
@@ -54,7 +54,7 @@ Route::middleware('auth')->group(function () {
         });
 
         // Permission Management (Admin only)
-        Route::prefix('permissions')->middleware('role:Admin')->group(function () {
+        Route::prefix('permissions')->middleware('role:super-admin')->group(function () {
             Route::get('/', [PermissionController::class, 'index'])->name('system.permissions.index');
             Route::get('/data', [PermissionController::class, 'data'])->name('system.permissions.data');
             Route::get('/create', [PermissionController::class, 'create'])->name('system.permissions.create');
@@ -65,14 +65,14 @@ Route::middleware('auth')->group(function () {
         });
 
         // Audit Logs (Admin only)
-        Route::prefix('audits')->middleware('role:Admin')->group(function () {
+        Route::prefix('audits')->middleware('role:super-admin')->group(function () {
             Route::get('/', [AuditController::class, 'index'])->name('system.audits.index');
             Route::get('/data', [AuditController::class, 'data'])->name('system.audits.data');
             Route::get('/{audit}', [AuditController::class, 'show'])->name('system.audits.show');
         });
 
         // Menu Management (Admin only)
-        Route::prefix('menus')->middleware('role:Admin')->group(function () {
+        Route::prefix('menus')->middleware('role:super-admin')->group(function () {
             Route::get('/', [MenuController::class, 'index'])->name('system.menus.index');
             Route::get('/create', [MenuController::class, 'create'])->name('system.menus.create');
             Route::post('/', [MenuController::class, 'store'])->name('system.menus.store');
@@ -83,20 +83,22 @@ Route::middleware('auth')->group(function () {
         });
 
         // System Settings (Admin only)
-        Route::prefix('settings')->middleware('role:Admin')->group(function () {
+        Route::prefix('settings')->middleware('role:super-admin')->group(function () {
             Route::get('/', [SystemSettingsController::class, 'index'])->name('system.settings.index');
             Route::put('/', [SystemSettingsController::class, 'update'])->name('system.settings.update');
         });
 
         // Tenant Management (Admin only)
-        Route::prefix('tenants')->middleware('role:Admin')->group(function () {
+        Route::prefix('tenants')->middleware('role:super-admin')->group(function () {
             Route::get('/', [TenantController::class, 'index'])->name('system.tenants.index');
+            Route::get('/data', [TenantController::class, 'data'])->name('system.tenants.data');
+            Route::get('/{id}/detail', [TenantController::class, 'detail'])->name('system.tenants.detail');
             Route::get('/create', [TenantController::class, 'create'])->name('system.tenants.create');
             Route::post('/', [TenantController::class, 'store'])->name('system.tenants.store');
-            Route::get('/{tenant}', [TenantController::class, 'show'])->name('system.tenants.show');
-            Route::get('/{tenant}/edit', [TenantController::class, 'edit'])->name('system.tenants.edit');
-            Route::put('/{tenant}', [TenantController::class, 'update'])->name('system.tenants.update');
-            Route::delete('/{tenant}', [TenantController::class, 'destroy'])->name('system.tenants.destroy');
+            Route::get('/{id}', [TenantController::class, 'show'])->name('system.tenants.show');
+            Route::get('/{id}/edit', [TenantController::class, 'edit'])->name('system.tenants.edit');
+            Route::put('/{id}', [TenantController::class, 'update'])->name('system.tenants.update');
+            Route::delete('/{id}', [TenantController::class, 'destroy'])->name('system.tenants.destroy');
             Route::post('/{tenant}/switch', [TenantController::class, 'switch'])->name('system.tenants.switch');
             Route::put('/{tenant}/config', [TenantController::class, 'config'])->name('system.tenants.config');
             Route::get('/{tenant}/config/{key?}', [TenantController::class, 'getConfig'])->name('system.tenants.getConfig');

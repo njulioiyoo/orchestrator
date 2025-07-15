@@ -1,18 +1,21 @@
 <template>
-    <div>
-        <Head title="Edit Tenant" />
-        
-        <PageHeader 
-            :title="`Edit Tenant: ${tenant.name}`" 
-            subtitle="Update tenant information and configuration" 
-        />
-        
-        <div class="card">
-            <div class="card-header">
-                <h5 class="card-title mb-0">Tenant Information</h5>
+    <div class="container-fluid">
+        <div class="block-header">
+            <div class="row">
+                <div class="col-lg-6 col-md-6 col-sm-12">
+                    <h2>Edit Tenant: {{ tenant.name }}</h2>
+                    <Breadcrumb :items="breadcrumbItems" />
+                </div>
             </div>
-            
-            <div class="card-body">
+        </div>
+        
+        <div class="row clearfix">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="header">
+                        <h2>Tenant Information</h2>
+                    </div>
+                    <div class="body">
                 <form @submit.prevent="submit">
                     <div class="row">
                         <div class="col-md-6 mb-3">
@@ -159,7 +162,7 @@
                     </div>
                     
                     <div class="d-flex justify-content-between">
-                        <Link :href="route('system.tenants.index')" class="btn btn-secondary">
+                        <Link href="/system/tenants" class="btn btn-secondary">
                             Cancel
                         </Link>
                         <button type="submit" class="btn btn-primary" :disabled="form.processing">
@@ -168,18 +171,32 @@
                         </button>
                     </div>
                 </form>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </template>
 
 <script setup>
-import { Head, Link, useForm } from '@inertiajs/vue3'
-import PageHeader from '@/components/PageHeader.vue'
+import AppLayout from '@/Layouts/AppLayout.vue'
+import Breadcrumb from '@/Components/Breadcrumb.vue'
+import { Link, useForm } from '@inertiajs/vue3'
+
+defineOptions({
+    layout: AppLayout
+})
 
 const props = defineProps({
     tenant: Object
 })
+
+const breadcrumbItems = [
+    { label: '', link: '#', icon: 'fa fa-dashboard' },
+    { label: 'System' },
+    { label: 'Tenants', link: '/system/tenants' },
+    { label: 'Edit' },
+]
 
 const form = useForm({
     name: props.tenant.name,
@@ -196,6 +213,6 @@ const form = useForm({
 })
 
 function submit() {
-    form.put(route('system.tenants.update', props.tenant.id))
+    form.put(`/system/tenants/${props.tenant.encrypted_id}`)
 }
 </script>

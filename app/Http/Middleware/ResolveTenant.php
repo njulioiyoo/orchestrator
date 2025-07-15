@@ -24,6 +24,14 @@ class ResolveTenant
     public function handle(Request $request, Closure $next): Response
     {
         try {
+            // Check if user is authenticated and is super admin
+            $user = $request->user();
+            $isSuperAdmin = $user && (
+                $user->hasPermissionTo('super_admin') ||
+                $user->hasRole('super-admin') ||
+                ($user->settings['can_access_all_tenants'] ?? false)
+            );
+            
             // Try to resolve tenant from request (domain/subdomain)
             $tenant = $this->tenantContext->resolveFromRequest($request);
             
@@ -31,13 +39,18 @@ class ResolveTenant
             if (!$tenant) {
                 $tenant = $this->tenantContext->resolveFromSession();
             }
+            
+            // If still no tenant, try to get default tenant for super admin
+            if (!$tenant && $isSuperAdmin) {
+                $tenant = \App\Models\Tenant::where('slug', 'default')->first();
+            }
 
             // Set the tenant in context
             if ($tenant) {
                 $this->tenantContext->setTenant($tenant);
                 
-                // Validate tenant access
-                if (!$this->tenantContext->validateAccess()) {
+                // Validate tenant access (skip for super admin)
+                if (!$isSuperAdmin && !$this->tenantContext->validateAccess()) {
                     abort(403, 'Tenant access denied or expired.');
                 }
             }

@@ -1,24 +1,28 @@
 <template>
-    <div>
+    <div class="container-fluid">
         <Head :title="`Tenant: ${tenant.name}`" />
         
-        <PageHeader 
-            :title="`Tenant: ${tenant.name}`" 
-            subtitle="View tenant details and manage configuration" 
-        />
+        <div class="block-header">
+            <div class="row">
+                <div class="col-md-6">
+                    <h2>Tenant: {{ tenant.name }}</h2>
+                    <Breadcrumb :items="breadcrumbItems" />
+                </div>
+            </div>
+        </div>
         
-        <div class="row">
+        <div class="row clearfix">
             <!-- Tenant Information -->
             <div class="col-md-8">
                 <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="card-title mb-0">Tenant Information</h5>
-                        <Link :href="route('system.tenants.edit', tenant.id)" class="btn btn-primary btn-sm">
+                    <div class="header d-flex justify-content-between align-items-center">
+                        <h2>Tenant Information</h2>
+                        <Link :href="`/system/tenants/${tenant.encrypted_id}/edit`" class="btn btn-primary btn-sm">
                             <i class="bi bi-pencil me-1"></i>Edit
                         </Link>
                     </div>
                     
-                    <div class="card-body">
+                    <div class="body">
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold">Name</label>
@@ -76,11 +80,11 @@
                 
                 <!-- Configuration -->
                 <div class="card mt-4">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">Configuration</h5>
+                    <div class="header">
+                        <h2>Configuration</h2>
                     </div>
                     
-                    <div class="card-body">
+                    <div class="body">
                         <div class="row">
                             <div class="col-md-4 mb-3">
                                 <div class="d-flex align-items-center">
@@ -117,11 +121,11 @@
             <!-- Users -->
             <div class="col-md-4">
                 <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">Users ({{ tenant.users.length }})</h5>
+                    <div class="header">
+                        <h2>Users ({{ tenant.users.length }})</h2>
                     </div>
                     
-                    <div class="card-body">
+                    <div class="body">
                         <div v-if="tenant.users.length === 0" class="text-center text-muted py-4">
                             <i class="bi bi-people display-4"></i>
                             <p class="mt-2 mb-0">No users found</p>
@@ -142,13 +146,13 @@
                 
                 <!-- Quick Actions -->
                 <div class="card mt-4">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">Quick Actions</h5>
+                    <div class="header">
+                        <h2>Quick Actions</h2>
                     </div>
                     
-                    <div class="card-body">
+                    <div class="body">
                         <div class="d-grid gap-2">
-                            <Link :href="route('system.tenants.edit', tenant.id)" class="btn btn-primary btn-sm">
+                            <Link :href="`/system/tenants/${tenant.encrypted_id}/edit`" class="btn btn-primary btn-sm">
                                 <i class="bi bi-pencil me-2"></i>Edit Tenant
                             </Link>
                             <button @click="copyTenantInfo" class="btn btn-outline-secondary btn-sm">
@@ -170,14 +174,26 @@
 </template>
 
 <script setup>
+import AppLayout from '@/Layouts/AppLayout.vue'
+import Breadcrumb from '@/Components/Breadcrumb.vue'
 import { Head, Link } from '@inertiajs/vue3'
 import { router } from '@inertiajs/vue3'
 import { computed } from 'vue'
-import PageHeader from '@/components/PageHeader.vue'
+
+defineOptions({
+    layout: AppLayout
+})
 
 const props = defineProps({
     tenant: Object
 })
+
+const breadcrumbItems = [
+    { label: '', link: '#', icon: 'fa fa-dashboard' },
+    { label: 'System' },
+    { label: 'Tenants', link: '/system/tenants' },
+    { label: 'View' },
+]
 
 const isExpired = computed(() => {
     if (!props.tenant.expires_at) return false
@@ -195,7 +211,7 @@ function deleteTenant() {
     }
     
     if (confirm(`Are you sure you want to delete tenant "${props.tenant.name}"?`)) {
-        router.delete(route('system.tenants.destroy', props.tenant.id))
+        router.delete(`/system/tenants/${props.tenant.encrypted_id}`)
     }
 }
 
