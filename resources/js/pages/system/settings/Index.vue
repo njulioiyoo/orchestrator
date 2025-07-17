@@ -44,7 +44,11 @@
                                 <!-- General Settings Tab -->
                                 <div class="tab-pane show active" id="General-tab">
                                     <h6>General Settings</h6>
-                                    <div class="row" v-if="settingsGrouped.general">
+                                    <div v-if="!settingsGrouped || Object.keys(settingsGrouped).length === 0" class="alert alert-warning">
+                                        <i class="fa fa-exclamation-triangle me-2"></i>
+                                        No system settings found. Please run the seeder: <code>php artisan db:seed --class=SystemSettingsSeeder</code>
+                                    </div>
+                                    <div class="row" v-else-if="settingsGrouped.general">
                                         <div v-for="setting in settingsGrouped.general" :key="setting.key" class="col-md-6 mb-3">
                                             <div class="form-group">
                                                 <label :for="setting.key" class="form-label">{{ setting.name }}</label>
@@ -240,7 +244,9 @@ defineOptions({
 
 // Debug props on mount
 onMounted(() => {
-    // Component mounted
+    console.log('SystemSettings component mounted')
+    console.log('Props settingsGrouped:', props.settingsGrouped)
+    console.log('Form settings:', form.settings)
 })
 
 const props = defineProps({

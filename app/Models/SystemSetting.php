@@ -6,11 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use OwenIt\Auditing\Contracts\Auditable;
 use OwenIt\Auditing\Auditable as AuditableTrait;
-use App\Models\Traits\HasTenant;
-
 class SystemSetting extends Model implements Auditable
 {
-    use HasFactory, HasTenant, AuditableTrait;
+    use HasFactory, AuditableTrait;
 
     protected $fillable = [
         'key',
@@ -21,8 +19,7 @@ class SystemSetting extends Model implements Auditable
         'group',
         'options',
         'is_public',
-        'sort_order',
-        'tenant_id'
+        'sort_order'
     ];
 
     protected $casts = [
@@ -44,8 +41,7 @@ class SystemSetting extends Model implements Auditable
         'group',
         'options',
         'is_public',
-        'sort_order',
-        'tenant_id'
+        'sort_order'
     ];
 
     /**
