@@ -102,6 +102,17 @@ Route::middleware('auth')->group(function () {
             Route::post('/{tenant}/switch', [TenantController::class, 'switch'])->name('system.tenants.switch');
             Route::put('/{tenant}/config', [TenantController::class, 'config'])->name('system.tenants.config');
             Route::get('/{tenant}/config/{key?}', [TenantController::class, 'getConfig'])->name('system.tenants.getConfig');
+            
+            // API Credentials management for web interface
+            Route::prefix('{tenant}/api-credentials')->group(function () {
+                Route::get('/', [\App\Http\Controllers\Api\TenantApiCredentialController::class, 'index'])->name('system.tenants.api-credentials.index');
+                Route::post('/', [\App\Http\Controllers\Api\TenantApiCredentialController::class, 'store'])->name('system.tenants.api-credentials.store');
+                Route::get('/{credential}', [\App\Http\Controllers\Api\TenantApiCredentialController::class, 'show'])->name('system.tenants.api-credentials.show');
+                Route::put('/{credential}', [\App\Http\Controllers\Api\TenantApiCredentialController::class, 'update'])->name('system.tenants.api-credentials.update');
+                Route::delete('/{credential}', [\App\Http\Controllers\Api\TenantApiCredentialController::class, 'destroy'])->name('system.tenants.api-credentials.destroy');
+                Route::post('/{credential}/regenerate-secret', [\App\Http\Controllers\Api\TenantApiCredentialController::class, 'regenerateSecret'])->name('system.tenants.api-credentials.regenerate-secret');
+                Route::get('/{credential}/usage', [\App\Http\Controllers\Api\TenantApiCredentialController::class, 'usage'])->name('system.tenants.api-credentials.usage');
+            });
         });
     });
 

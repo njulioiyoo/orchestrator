@@ -27,6 +27,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'tenant' => \App\Http\Middleware\EnsureTenantAccess::class,
             'tenant.access' => \App\Http\Middleware\TenantAccessMiddleware::class,
             'tenant.resolve' => \App\Http\Middleware\TenantResolveMiddleware::class,
+            'tenant.api.isolation' => \App\Http\Middleware\TenantApiIsolation::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

@@ -55,6 +55,14 @@ class TenantAuthController extends Controller
             ], 404);
         }
 
+        // Check if tenant allows web login (for API login this should be allowed)
+        if (!$tenant->canWebLogin()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This tenant is configured for API-only access. Please use the external API endpoints.'
+            ], 403);
+        }
+
         // Check if tenant is expired
         if ($tenant->expires_at && $tenant->expires_at < now()) {
             return response()->json([

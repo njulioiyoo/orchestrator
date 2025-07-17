@@ -18,12 +18,15 @@ class Tenant extends Model
         'config',
         'is_active',
         'expires_at',
+        'tenant_type',
+        'allow_web_login',
     ];
 
     protected $casts = [
         'config' => 'array',
         'is_active' => 'boolean',
         'expires_at' => 'datetime',
+        'allow_web_login' => 'boolean',
     ];
 
     // Relationships
@@ -70,5 +73,49 @@ class Tenant extends Model
     public function canAccess()
     {
         return $this->is_active && !$this->isExpired();
+    }
+
+    // Tenant Type Helper Methods
+    public function isRegularTenant()
+    {
+        return $this->tenant_type === 'regular';
+    }
+
+    public function isApiOnlyTenant()
+    {
+        return $this->tenant_type === 'api_only';
+    }
+
+    public function canWebLogin()
+    {
+        return $this->allow_web_login && $this->isRegularTenant();
+    }
+
+    // Relationships for API
+    public function apiCredentials()
+    {
+        return $this->hasMany(TenantApiCredential::class);
+    }
+
+    public function apiUsageLogs()
+    {
+        return $this->hasMany(ApiUsageLog::class);
+    }
+
+    // Scopes
+    public function scopeRegular($query)
+    {
+        return $query->where('tenant_type', 'regular');
+    }
+
+    public function scopeApiOnly($query)
+    {
+        return $query->where('tenant_type', 'api_only');
+    }
+
+    public function scopeCanWebLogin($query)
+    {
+        return $query->where('allow_web_login', true)
+                    ->where('tenant_type', 'regular');
     }
 }

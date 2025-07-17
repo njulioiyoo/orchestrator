@@ -25,9 +25,18 @@ class AuthController extends Controller
             ]);
         }
 
+        $user = Auth::user();
+        
+        // Check if user's tenant allows web login
+        if ($user->tenant && !$user->tenant->canWebLogin()) {
+            Auth::logout();
+            throw ValidationException::withMessages([
+                'email' => 'This tenant is configured for API-only access. Web login is not permitted.',
+            ]);
+        }
+
         $request->session()->regenerate();
         
-        $user = Auth::user();
         session()->flash('login_success', [
             'message' => 'Hello, welcome to Iconic ' . $user->name,
             'user_name' => $user->name

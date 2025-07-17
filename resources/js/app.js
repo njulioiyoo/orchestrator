@@ -5,6 +5,8 @@ import axios from 'axios'
 import permissionDirective from './directives/permission.js'
 
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest'
+// Add CSRF token for API requests
+axios.defaults.withCredentials = true
 
 // Function to update CSRF token
 const updateCsrfToken = () => {

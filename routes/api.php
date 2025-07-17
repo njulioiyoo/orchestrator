@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\ExternalAuthController;
 
 /*
 |--------------------------------------------------------------------------
@@ -13,6 +14,92 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
+
+// External API routes for client applications
+Route::prefix('external/v1')->group(function () {
+    // Authentication endpoints (no middleware needed)
+    Route::post('/auth/login', [ExternalAuthController::class, 'login']);
+    
+    // Protected endpoints with tenant isolation
+    Route::middleware(['auth:sanctum', 'tenant.api.isolation'])->group(function () {
+        Route::get('/auth/user', [ExternalAuthController::class, 'user']);
+        Route::post('/auth/refresh', [ExternalAuthController::class, 'refresh']);
+        Route::post('/auth/logout', [ExternalAuthController::class, 'logout']);
+        
+        // Tenant info endpoints
+        Route::get('/tenant/info', function () {
+            $tenantId = app('current_tenant_id');
+            $tenant = \App\Models\Tenant::find($tenantId);
+            
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'tenant' => [
+                        'id' => $tenant->id,
+                        'name' => $tenant->name,
+                        'slug' => $tenant->slug,
+                        'domain' => $tenant->domain,
+                        'subdomain' => $tenant->subdomain,
+                        'config' => $tenant->config
+                    ]
+                ]
+            ]);
+        });
+        
+        Route::get('/tenant/config', function () {
+            $tenantId = app('current_tenant_id');
+            $tenant = \App\Models\Tenant::find($tenantId);
+            
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'config' => $tenant->config,
+                    'features' => $tenant->config['features'] ?? [],
+                    'limits' => $tenant->config['limits'] ?? []
+                ]
+            ]);
+        });
+        
+        // Users endpoints (tenant-scoped)
+        Route::get('/users', function () {
+            $tenantId = app('current_tenant_id');
+            $users = \App\Models\User::where('tenant_id', $tenantId)
+                ->where('is_active', true)
+                ->select('id', 'name', 'email', 'tenant_id', 'created_at')
+                ->get();
+            
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'users' => $users
+                ]
+            ]);
+        });
+        
+        Route::get('/users/{id}', function ($id) {
+            $tenantId = app('current_tenant_id');
+            $user = \App\Models\User::where('tenant_id', $tenantId)
+                ->where('id', $id)
+                ->where('is_active', true)
+                ->select('id', 'name', 'email', 'tenant_id', 'profile', 'created_at')
+                ->first();
+            
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not found'
+                ], 404);
+            }
+            
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'user' => $user
+                ]
+            ]);
+        });
+    });
+});
 
 // Load tenant API routes
 require __DIR__.'/api_tenant.php';

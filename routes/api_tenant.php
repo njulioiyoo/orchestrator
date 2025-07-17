@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\TenantApiController;
 use App\Http\Controllers\Api\TenantAuthController;
 use App\Http\Controllers\Api\TenantUserController;
 use App\Http\Controllers\Api\TenantConfigController;
+use App\Http\Controllers\Api\TenantApiCredentialController;
 
 /*
 |--------------------------------------------------------------------------
@@ -33,7 +34,7 @@ Route::prefix('v1')->group(function () {
 });
 
 // Protected routes (requires authentication)
-Route::prefix('v1')->middleware(['auth:sanctum'])->group(function () {
+Route::prefix('v1')->middleware(['auth:web'])->group(function () {
     
     // Authentication routes
     Route::post('/auth/logout', [TenantAuthController::class, 'logout']);
@@ -41,11 +42,22 @@ Route::prefix('v1')->middleware(['auth:sanctum'])->group(function () {
     Route::post('/auth/refresh', [TenantAuthController::class, 'refresh']);
     
     // Tenant management routes (admin only)
-    Route::middleware(['permission:manage_tenants'])->group(function () {
+    Route::middleware(['role:super-admin'])->group(function () {
         Route::apiResource('tenants', TenantApiController::class);
         Route::post('/tenants/{tenant}/switch', [TenantApiController::class, 'switchTenant']);
         Route::get('/tenants/{tenant}/stats', [TenantApiController::class, 'getTenantStats']);
         Route::put('/tenants/{tenant}/status', [TenantApiController::class, 'updateStatus']);
+        
+        // API credentials management
+        Route::prefix('tenants/{tenant}/api-credentials')->group(function () {
+            Route::get('/', [TenantApiCredentialController::class, 'index']);
+            Route::post('/', [TenantApiCredentialController::class, 'store']);
+            Route::get('/{credential}', [TenantApiCredentialController::class, 'show']);
+            Route::put('/{credential}', [TenantApiCredentialController::class, 'update']);
+            Route::delete('/{credential}', [TenantApiCredentialController::class, 'destroy']);
+            Route::post('/{credential}/regenerate-secret', [TenantApiCredentialController::class, 'regenerateSecret']);
+            Route::get('/{credential}/usage', [TenantApiCredentialController::class, 'usage']);
+        });
     });
     
     // Tenant configuration routes

@@ -34,9 +34,9 @@ class TenantController extends Controller
                     $viewUrl = '/system/tenants/' . $row->encrypted_id;
                     $editUrl = '/system/tenants/' . $row->encrypted_id . '/edit';
                     return '
-                        <button type="button" data-id="' . $row->encrypted_id . '" class="btn btn-info btn-sm js-view" title="View">
+                        <a href="' . $viewUrl . '" class="btn btn-info btn-sm" title="View">
                             <i class="fa fa-eye"></i>
-                        </button>
+                        </a>
                         <a href="' . $editUrl . '" class="btn btn-warning btn-sm" title="Edit">
                             <i class="fa fa-edit"></i>
                         </a>
@@ -95,8 +95,20 @@ class TenantController extends Controller
             $query->select('id', 'name', 'email', 'tenant_id');
         }]);
 
+        // Add tenant_type and allow_web_login if they don't exist
+        if (!isset($tenant->tenant_type)) {
+            $tenant->tenant_type = 'regular';
+        }
+        if (!isset($tenant->allow_web_login)) {
+            $tenant->allow_web_login = true;
+        }
+
+        // Make tenant array and add encrypted_id
+        $tenantArray = $tenant->toArray();
+        $tenantArray['encrypted_id'] = $tenant->getRouteKey();
+
         return Inertia::render('system/tenants/Show', [
-            'tenant' => $tenant,
+            'tenant' => $tenantArray,
         ]);
     }
 
